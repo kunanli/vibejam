@@ -6,7 +6,7 @@ const MONSTERS = [
   { name: '史萊姆', art: '🟢', img: './assets/monsters/slime.png' },
   { name: '哥布林', art: '👺', img: './assets/monsters/goblin.png' },
   { name: '骷髏兵', art: '💀', img: './assets/monsters/skeleton.png' },
-  { name: '塔之守衛', art: '🛡️', img: './assets/monsters/boss-guardian.png' },
+  { name: '塔之守衛', art: '🛡️', img: './assets/monsters/boss.png' },
 ];
 
 // 依樓層生成怪物：每 4 層為 Boss（守衛），HP / 威脅速率 / 攻擊隨層膨脹
