@@ -5,7 +5,7 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.13.0 · 2026-05-22';
+const VERSION = 'v0.14.0 · 2026-05-22';
 
 // 每打完一層的繪本故事（家長引導讀／語音朗讀）。img 可放 assets/story/pageN.webp，缺圖用 art emoji
 const STORY = {
@@ -45,6 +45,8 @@ function enterFloor() {
   R.renderCounts();
   renderSelection();
   R.monsterEnter();
+  // 發牌動畫播完後重繪一次，讓「點我」脈動提示接手
+  setTimeout(() => { if (state.phase === 'battle') R.renderHand(toggleCard); }, 700);
 }
 
 function newTarget() {
@@ -54,7 +56,9 @@ function newTarget() {
 
 function refillHand() {
   while (state.hand.length < HAND_SIZE) {
-    state.hand.push({ id: state.nextCardId++, value: drawCard(state.floor) });
+    const id = state.nextCardId++;
+    state.hand.push({ id, value: drawCard(state.floor) });
+    state.justDrawn.add(id); // 給發牌動畫
   }
 }
 
@@ -128,12 +132,15 @@ function applyHit(result, exact, miss) {
   const { damage, crit } = result;
 
   state.enemy.hp -= damage;
+  const big = damage >= 200;
   A.playHit(state.combo);
-  if (exact) { A.playExact(); R.celebrate(); }
+  R.hitEffect(exact, big);
+  R.shake(exact || big ? 'big' : 'normal');
+  if (exact || big) R.hitstop();
+  if (exact) { A.playExact(); R.goldFlash(); R.confettiBurst('mini'); }
   else if (crit) A.playCrit();
   if (miss) { A.playWrong(); R.flashMiss(); }
   R.floatDamage(damage, exact || crit);
-  R.shake(exact || damage >= 200 ? 'big' : 'normal');
 
   R.renderBattle();
   R.renderCombo();
@@ -160,6 +167,7 @@ function discardCards() {
 
 function winFloor() {
   A.playWin();
+  R.confettiBurst('mid');
   const cleared = state.floor;
   state.phase = 'story';
   R.showStory(STORY[cleared], () => afterStory(cleared));
@@ -182,6 +190,8 @@ function afterStory(cleared) {
 function victory() {
   state.phase = 'gameover';
   R.showOverlay('🏆', '🗼✨', '🔄');
+  R.confettiBurst('big');
+  setTimeout(() => R.confettiBurst('big'), 400);
 }
 
 function gameOver() {

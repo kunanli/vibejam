@@ -155,13 +155,19 @@ export function renderHand(onToggle) {
   const hand = $('hand');
   hand.classList.toggle('hint', state.selected.size === 0); // 沒選牌時輕輕脈動提示點牌
   hand.innerHTML = '';
+  let dealIndex = 0;
   state.hand.forEach((card, i) => {
     const el = document.createElement('div');
     el.className = 'numcard' + (state.selected.has(card.id) ? ' selected' : '');
+    if (state.justDrawn.has(card.id)) {
+      el.classList.add('deal');
+      el.style.animationDelay = (dealIndex++ * 70) + 'ms';
+    }
     el.innerHTML = `<span class="numcard-key">${i + 1}</span><span class="numcard-val">${card.value}</span>`;
     el.addEventListener('click', () => onToggle(card.id));
     hand.appendChild(el);
   });
+  state.justDrawn.clear(); // 只播一次
 }
 
 // 選牌即時資訊：總和 / 牌型 / 預估傷害；命中目標時亮綠 + 出牌鈕脈動
@@ -174,30 +180,89 @@ export function renderSelection({ sum, patternName, dmg }) {
   $('play-btn').classList.toggle('ready', hit && state.playsLeft > 0);
 }
 
-// 命中目標慶祝：金光閃 + 怪物周圍噴星星
-export function celebrate() {
-  const arena = document.querySelector('.arena');
-  arena.classList.remove('flash');
-  void arena.offsetWidth;
-  arena.classList.add('flash');
-
-  const layer = $('float-layer');
-  const aRect = arena.getBoundingClientRect();
+// 怪物中心在 arena 內的百分比座標
+function monsterCenterPct() {
+  const aRect = document.querySelector('.arena').getBoundingClientRect();
   const mRect = $('monster-art').getBoundingClientRect();
-  const cx = ((mRect.left + mRect.width / 2) - aRect.left) / aRect.width * 100;
-  const cy = ((mRect.top + mRect.height / 2) - aRect.top) / aRect.height * 100;
-  for (let i = 0; i < 12; i++) {
+  return {
+    cx: ((mRect.left + mRect.width / 2) - aRect.left) / aRect.width * 100,
+    cy: ((mRect.top + mRect.height / 2) - aRect.top) / aRect.height * 100,
+  };
+}
+
+// 通用火花噴發
+export function burst(cx, cy, count = 10, emojis = ['✨', '⭐']) {
+  const layer = $('float-layer');
+  for (let i = 0; i < count; i++) {
     const s = document.createElement('div');
     s.className = 'spark';
-    s.textContent = Math.random() < 0.5 ? '✨' : '⭐';
+    s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
     s.style.left = cx + '%';
     s.style.top = cy + '%';
     const ang = Math.random() * Math.PI * 2;
-    const dist = 70 + Math.random() * 90;
+    const dist = 70 + Math.random() * 100;
     s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
     s.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
     layer.appendChild(s);
     setTimeout(() => s.remove(), 720);
+  }
+}
+
+// 怪物被打：白閃 + 後仰
+export function monsterHit() {
+  const m = $('monster-art');
+  m.classList.remove('hit');
+  void m.offsetWidth;
+  m.classList.add('hit');
+}
+
+// 撞擊光環（怪物中心擴張）
+export function impactRing(big) {
+  const { cx, cy } = monsterCenterPct();
+  const ring = document.createElement('div');
+  ring.className = 'impact-ring' + (big ? ' big' : '');
+  ring.style.left = cx + '%';
+  ring.style.top = cy + '%';
+  $('float-layer').appendChild(ring);
+  setTimeout(() => ring.remove(), 500);
+}
+
+// 金光閃（命中目標用）
+export function goldFlash() {
+  const arena = document.querySelector('.arena');
+  arena.classList.remove('flash');
+  void arena.offsetWidth;
+  arena.classList.add('flash');
+}
+
+// 攻擊命中組合：白閃後仰 + 光環 + 火花
+export function hitEffect(exact, big) {
+  monsterHit();
+  impactRing(big || exact);
+  const { cx, cy } = monsterCenterPct();
+  burst(cx, cy, exact ? 16 : 7, exact ? ['✨', '⭐', '🌟'] : ['💥', '✨']);
+}
+
+// 短暫頓挫（大擊用）
+export function hitstop() {
+  const g = document.getElementById('game');
+  g.classList.remove('hitstop');
+  void g.offsetWidth;
+  g.classList.add('hitstop');
+  setTimeout(() => g.classList.remove('hitstop'), 120);
+}
+
+// canvas-confetti 包裝；未載入就靜默（火花仍在）
+export function confettiBurst(kind) {
+  const C = window.confetti;
+  if (!C) return;
+  if (kind === 'big') {
+    C({ particleCount: 90, spread: 70, origin: { x: 0.15, y: 0.6 } });
+    C({ particleCount: 90, spread: 70, origin: { x: 0.85, y: 0.6 } });
+  } else if (kind === 'mid') {
+    C({ particleCount: 70, spread: 80, origin: { y: 0.55 } });
+  } else {
+    C({ particleCount: 32, spread: 55, startVelocity: 32, origin: { y: 0.4 } });
   }
 }
 
@@ -253,9 +318,22 @@ export function flyCardsToEnemy(cardEls, onArrive) {
     const dy = ty - (r.top + r.height / 2);
     const rot = (i - cardEls.length / 2) * 14;
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      fly.style.transform = `translate(${dx}px, ${dy}px) scale(.35) rotate(${rot}deg)`;
-      fly.style.opacity = '0.15';
+      fly.style.transform = `translate(${dx}px, ${dy}px) scale(.35) rotate(${rot + 220}deg)`;
+      fly.style.opacity = '0.12';
     }));
+    // 拖曳殘影
+    [90, 170, 250].forEach((t) => setTimeout(() => {
+      const cur = fly.getBoundingClientRect();
+      const gh = document.createElement('div');
+      gh.className = 'fly-ghost';
+      gh.textContent = fly.textContent;
+      gh.style.left = cur.left + 'px';
+      gh.style.top = cur.top + 'px';
+      gh.style.width = r.width + 'px';
+      gh.style.height = r.height + 'px';
+      layer.appendChild(gh);
+      setTimeout(() => gh.remove(), 240);
+    }, t));
     setTimeout(() => fly.remove(), DUR + 80);
   });
   setTimeout(onArrive, DUR);

@@ -16,6 +16,7 @@ export const state = {
   nextCardId: 1,
   playsLeft: PLAYS,
   discardsLeft: DISCARDS,
+  justDrawn: new Set(), // 本次新抽到的手牌 id（給發牌動畫）
 };
 
 export function resetRun() {
@@ -30,4 +31,5 @@ export function resetRun() {
   state.nextCardId = 1;
   state.playsLeft = PLAYS;
   state.discardsLeft = DISCARDS;
+  state.justDrawn = new Set();
 }
