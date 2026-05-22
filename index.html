@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>數塔 · Number Tower</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="game">
+      <!-- 過場 / 標題 / 結束 共用層 -->
+      <div id="overlay" class="overlay hidden">
+        <div class="overlay-card">
+          <h1 id="overlay-title"></h1>
+          <p id="overlay-sub"></p>
+          <button id="overlay-btn"></button>
+        </div>
+      </div>
+
+      <!-- 戰鬥畫面 -->
+      <div id="battle" class="battle hidden">
+        <div class="topbar">
+          <div class="floor-tag">第 <span id="floor-num">1</span> 層</div>
+          <div class="hp-wrap">
+            <span class="hp-label">HP</span>
+            <div class="hp-bar"><div id="player-hp-fill" class="hp-fill"></div></div>
+            <span id="player-hp-text">100/100</span>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div id="monster" class="monster">
+            <div id="monster-art" class="monster-art">👹</div>
+            <div class="monster-name" id="monster-name">史萊姆</div>
+            <div class="enemy-hp-bar"><div id="enemy-hp-fill" class="enemy-hp-fill"></div></div>
+            <div class="enemy-hp-text" id="enemy-hp-text">50/50</div>
+            <div class="threat-wrap">
+              <span class="threat-label">威脅</span>
+              <div class="threat-bar"><div id="threat-fill" class="threat-fill"></div></div>
+            </div>
+          </div>
+          <div id="float-layer" class="float-layer"></div>
+        </div>
+
+        <div class="combo-banner" id="combo-banner"></div>
+
+        <div class="problem-area">
+          <div id="problem" class="problem">3 + 4 = ?</div>
+          <input
+            id="answer-input"
+            class="answer-input"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="輸入答案後按 Enter"
+          />
+        </div>
+
+        <div class="hand" id="hand"></div>
+      </div>
+
+      <!-- 獎勵三選一 -->
+      <div id="reward" class="reward hidden">
+        <h2>戰利品 · 選一張卡牌</h2>
+        <div class="reward-cards" id="reward-cards"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

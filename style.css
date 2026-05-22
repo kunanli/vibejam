@@ -1,0 +1,191 @@
+:root {
+  --bg: #0d0b1a;
+  --panel: #1b1733;
+  --accent: #ffcc44;
+  --hp: #46d96a;
+  --enemy: #e2455a;
+  --threat: #ff7a3c;
+  --text: #f3eefb;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: radial-gradient(circle at 50% 0%, #241c45, var(--bg));
+  color: var(--text);
+  font-family: "Trebuchet MS", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+#game {
+  position: relative;
+  width: min(680px, 100vw);
+  height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.hidden { display: none !important; }
+
+/* ---- Overlay / 標題 / 結束 ---- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 6, 18, 0.92);
+  z-index: 50;
+}
+.overlay-card {
+  text-align: center;
+  padding: 40px;
+}
+.overlay-card h1 { font-size: 44px; color: var(--accent); margin: 0 0 12px; text-shadow: 0 0 18px rgba(255,204,68,.5); }
+.overlay-card p { max-width: 380px; line-height: 1.6; opacity: .9; }
+button {
+  margin-top: 20px;
+  padding: 14px 34px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #2a1d00;
+  cursor: pointer;
+  transition: transform .1s;
+}
+button:hover { transform: scale(1.06); }
+
+/* ---- 戰鬥 ---- */
+.battle { position: relative; flex: 1; display: flex; flex-direction: column; padding: 14px; gap: 12px; }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.floor-tag { font-weight: bold; font-size: 18px; color: var(--accent); white-space: nowrap; }
+.hp-wrap { display: flex; align-items: center; gap: 8px; flex: 1; }
+.hp-label { font-size: 13px; color: var(--hp); }
+.hp-bar { flex: 1; height: 16px; background: #2a2440; border-radius: 8px; overflow: hidden; }
+.hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #2ea84d, var(--hp)); transition: width .25s; }
+#player-hp-text { font-size: 12px; opacity: .8; min-width: 56px; text-align: right; }
+
+.stage {
+  position: relative;
+  flex: 1;
+  background: linear-gradient(180deg, #2a2150, #15112b);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 60px rgba(0,0,0,.5);
+}
+.monster { text-align: center; }
+.monster-art { font-size: 110px; line-height: 1; filter: drop-shadow(0 8px 20px rgba(0,0,0,.6)); animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.monster-name { font-size: 20px; font-weight: bold; margin-top: 6px; }
+.enemy-hp-bar { width: 220px; height: 14px; margin: 8px auto 2px; background: #3a2030; border-radius: 7px; overflow: hidden; }
+.enemy-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #b3273a, var(--enemy)); transition: width .2s; }
+.enemy-hp-text { font-size: 12px; opacity: .8; }
+
+.threat-wrap { display: flex; align-items: center; gap: 6px; width: 220px; margin: 10px auto 0; }
+.threat-label { font-size: 12px; color: var(--threat); }
+.threat-bar { flex: 1; height: 10px; background: #2a2440; border-radius: 6px; overflow: hidden; }
+.threat-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ffb347, var(--threat)); }
+.threat-fill.danger { animation: pulse .4s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+
+.float-layer { position: absolute; inset: 0; pointer-events: none; }
+.float-dmg {
+  position: absolute;
+  top: 38%;
+  font-weight: 900;
+  font-size: 32px;
+  color: #fff;
+  text-shadow: 0 2px 0 #000, 0 0 14px rgba(255,255,255,.6);
+  animation: floatUp 1.05s ease-out forwards;
+}
+.float-dmg.big { font-size: 50px; color: #ffd54a; }
+.float-dmg.huge { font-size: 70px; color: #ff5d8f; text-shadow: 0 0 24px #ff5d8f; }
+.float-dmg.crit { color: #ff3b3b; }
+.float-dmg.heal { color: var(--hp); top: 60%; }
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(.4); opacity: 0; }
+  20% { transform: translateY(-10px) scale(1.2); opacity: 1; }
+  100% { transform: translateY(-90px) scale(1); opacity: 0; }
+}
+
+.combo-banner {
+  text-align: center;
+  height: 26px;
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity .15s, transform .15s;
+}
+.combo-banner.show { opacity: 1; animation: comboPop .3s; }
+@keyframes comboPop { 0% { transform: scale(.6); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+.problem-area { text-align: center; }
+.problem { font-size: 40px; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; }
+.answer-input {
+  width: 220px;
+  padding: 12px;
+  font-size: 24px;
+  text-align: center;
+  border: 2px solid #4a3f7a;
+  border-radius: 12px;
+  background: #120f24;
+  color: var(--text);
+  outline: none;
+}
+.answer-input:focus { border-color: var(--accent); }
+.answer-input.wrong { animation: wrongShake .3s; border-color: var(--enemy); }
+@keyframes wrongShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+/* ---- 卡牌 / joker 列 ---- */
+.hand { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; min-height: 92px; }
+.card {
+  width: 92px;
+  padding: 8px 6px;
+  background: var(--panel);
+  border: 2px solid #4a3f7a;
+  border-radius: 10px;
+  text-align: center;
+  transition: transform .12s;
+}
+.card:hover { transform: translateY(-6px); }
+.card-art { font-size: 28px; }
+.card-name { font-size: 13px; font-weight: bold; margin: 2px 0; }
+.card-desc { font-size: 10px; opacity: .8; line-height: 1.3; }
+.card-rarity { font-size: 10px; margin-top: 4px; opacity: .6; }
+.rarity-rare { border-color: var(--accent); box-shadow: 0 0 12px rgba(255,204,68,.35); }
+
+/* ---- 獎勵 ---- */
+.reward { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+.reward h2 { color: var(--accent); }
+.reward-cards { display: flex; gap: 20px; }
+.reward-card { width: 140px; padding: 18px 12px; cursor: pointer; }
+.reward-card .card-art { font-size: 48px; }
+.reward-card .card-name { font-size: 18px; }
+.reward-card .card-desc { font-size: 13px; }
+.reward-card:hover { transform: translateY(-10px) scale(1.05); }
+
+/* ---- 震屏 / 受擊 ---- */
+.shake { animation: shake .25s; }
+.shake-big { animation: shakeBig .4s; }
+@keyframes shake { 0%,100% { transform: translate(0,0); } 25% { transform: translate(-4px,2px); } 75% { transform: translate(4px,-2px); } }
+@keyframes shakeBig { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-9px,4px); } 40% { transform: translate(8px,-5px); } 60% { transform: translate(-7px,3px); } 80% { transform: translate(6px,-4px); } }
+.hurt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, transparent 40%, rgba(226,69,90,.55));
+  pointer-events: none;
+  animation: hurtFlash .4s ease-out;
+  z-index: 40;
+}
+@keyframes hurtFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
