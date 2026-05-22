@@ -22,8 +22,8 @@ export function spawnEnemy(floor) {
     img: m.img,
     hp,
     maxHp: hp,
-    threat: 0, // 0..1
-    threatRate: (0.10 + floor * 0.012) * (isBoss ? 1.25 : 1), // 每秒累積
+    threat: 0, // 蓄力 0..1
+    charge: Math.min(0.6, (0.34 + floor * 0.02) * (isBoss ? 1.25 : 1)), // 每出一手累積；滿了攻擊
     attack: Math.round((6 + floor * 3) * (isBoss ? 1.5 : 1)),
     isBoss,
   };

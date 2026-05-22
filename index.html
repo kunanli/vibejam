@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>數塔 · Number Tower</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
@@ -18,48 +21,50 @@
         </div>
       </div>
 
-      <!-- 戰鬥畫面（寶可夢視角） -->
+      <!-- 戰鬥畫面（Undertale 半第一人稱） -->
       <div id="battle" class="battle hidden">
         <div class="topbar">
           <div class="floor-tag">第 <span id="floor-num">1</span> 層</div>
           <div class="jokers" id="jokers"></div>
         </div>
 
-        <!-- 對戰場：敵人右上、玩家左下 -->
+        <!-- 戰鬥區：怪物置中、迷你玩家左下 -->
         <div class="arena">
           <div id="float-layer" class="float-layer"></div>
 
-          <div class="side enemy-side">
-            <div class="info-box enemy-box">
-              <div class="info-name" id="monster-name">史萊姆</div>
-              <div class="info-hp"><div id="enemy-hp-fill" class="info-hp-fill enemy"></div></div>
-              <div class="info-row">
-                <span id="enemy-hp-text">50/50</span>
-                <span class="threat-mini">威脅 <div class="threat-bar"><div id="threat-fill" class="threat-fill"></div></div></span>
-              </div>
-            </div>
-            <div id="monster-art" class="sprite monster-sprite">👹</div>
-          </div>
-
-          <div class="side player-side">
-            <div id="player-art" class="sprite player-sprite">🧙</div>
-            <div class="info-box player-box">
-              <div class="info-name">你</div>
-              <div class="info-hp"><div id="player-hp-fill" class="info-hp-fill player"></div></div>
-              <div class="info-row"><span id="player-hp-text">100/100</span></div>
+          <div class="ut-box enemy-box">
+            <div class="info-name" id="monster-name">史萊姆</div>
+            <div class="info-hp"><div id="enemy-hp-fill" class="info-hp-fill enemy"></div></div>
+            <div class="info-row">
+              <span id="enemy-hp-text">50/50</span>
+              <span class="threat-mini">蓄力 <div class="threat-bar"><div id="threat-fill" class="threat-fill"></div></div></span>
             </div>
           </div>
 
-          <div class="target-banner">目標 <span id="target-num">24</span></div>
+          <div class="ut-box target-box">目標 <span id="target-num">24</span></div>
+
+          <div id="monster-art" class="sprite monster-sprite">👹</div>
+          <div id="player-art" class="sprite player-mini">🧙</div>
+
           <div class="combo-banner" id="combo-banner"></div>
         </div>
 
-        <!-- 出牌列：選牌資訊 + 數字手牌 -->
-        <div class="play-bar" id="play-bar">
-          <div class="play-readout">
-            <div class="readout-line">總和 <b id="sel-sum">0</b> · <span id="sel-pattern">—</span></div>
-            <div class="readout-dmg">預估 <b id="sel-dmg">0</b></div>
-            <button id="play-btn" class="play-btn">出牌 (Enter)</button>
+        <!-- 旁白 -->
+        <div class="narration" id="narration">* 一隻怪物擋住了去路。</div>
+
+        <!-- Undertale 行動框 -->
+        <div class="ut-actionbox" id="play-bar">
+          <div class="action-top">
+            <div class="player-hp-ut">
+              <span class="hp-label">HP</span>
+              <div class="hp-bar-ut"><div id="player-hp-fill" class="hp-fill-ut"></div></div>
+              <span id="player-hp-text">100/100</span>
+            </div>
+            <div class="play-readout">
+              <span>總和 <b id="sel-sum">0</b> · <span id="sel-pattern">—</span></span>
+              <span class="readout-dmg">預估 <b id="sel-dmg">0</b></span>
+              <button id="play-btn" class="play-btn">出牌 (Enter)</button>
+            </div>
           </div>
           <div class="hand" id="hand"></div>
         </div>

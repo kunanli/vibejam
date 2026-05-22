@@ -5,10 +5,8 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.5.0 · 2026-05-22';
+const VERSION = 'v0.6.0 · 2026-05-22';
 
-let rafId = null;
-let lastTick = 0;
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 
 // ---- 流程 ----
@@ -36,8 +34,7 @@ function enterFloor() {
   R.renderCombo();
   renderSelection();
   R.monsterEnter();
-  lastTick = performance.now();
-  loop(lastTick);
+  R.setNarration(`* ${state.enemy.name} 擋住了去路。`);
 }
 
 function newTarget() {
@@ -82,29 +79,25 @@ function toggleCard(id) {
   renderSelection();
 }
 
-function loop(now) {
-  if (state.phase !== 'battle') return;
-  const dt = (now - lastTick) / 1000;
-  lastTick = now;
+// 偏回合：每出一手後敵人行動，蓄力滿了才攻擊
+function enemyTurn() {
   const e = state.enemy;
-  e.threat += e.threatRate * dt;
-  if (e.threat >= 1) enemyAttack();
+  e.threat += e.charge;
+  if (e.threat >= 1) {
+    e.threat = 0;
+    state.combo = 0;
+    state.player.hp -= e.attack;
+    A.playHurt();
+    R.shake('big');
+    R.playerHit();
+    R.setNarration(`* ${e.name} 的攻擊！受到 ${e.attack} 傷害。`);
+    if (state.player.hp <= 0) { R.renderBattle(); gameOver(); return; }
+  } else {
+    R.setNarration(`* ${e.name} 正在蓄力…`);
+  }
   R.renderThreat();
-  rafId = requestAnimationFrame(loop);
-}
-
-function enemyAttack() {
-  const e = state.enemy;
-  e.threat = 0;
-  state.combo = 0;
-  state.player.hp -= e.attack;
-  A.playHurt();
-  R.shake('big');
-  R.playerHit();
   R.renderBattle();
   R.renderCombo();
-  renderSelection();
-  if (state.player.hp <= 0) gameOver();
 }
 
 function playCards() {
@@ -143,12 +136,10 @@ function playCards() {
 
 function applyHit(result, exact, miss) {
   resolving = false;
-  if (state.phase !== 'battle') return; // 動畫途中已死亡/換場
-  const { damage, heal, threatRelief, crit } = result;
+  if (state.phase !== 'battle') return; // 動畫途中已換場
+  const { damage, heal, crit } = result;
 
   state.enemy.hp -= damage;
-  state.enemy.threat = Math.max(0, state.enemy.threat - (exact ? threatRelief + 0.1 : threatRelief));
-
   A.playHit(state.combo);
   if (exact || crit) A.playCrit();
   if (miss) { A.playWrong(); R.flashMiss(); }
@@ -160,18 +151,20 @@ function applyHit(result, exact, miss) {
     R.floatHeal(heal);
   }
 
-  newTarget();
   R.renderBattle();
   R.renderCombo();
-  R.renderThreat();
-  renderSelection();
 
-  if (state.enemy.hp <= 0) winFloor();
+  if (state.enemy.hp <= 0) { winFloor(); return; }
+
+  // 敵人這一手才行動
+  enemyTurn();
+  if (state.phase !== 'battle') return; // 玩家倒下
+  newTarget();
+  renderSelection();
 }
 
 function winFloor() {
   state.phase = 'reward';
-  cancelAnimationFrame(rafId);
   A.playWin();
   const rewards = rollRewards(3);
   R.renderRewards(rewards, (card) => {
@@ -185,7 +178,6 @@ function winFloor() {
 
 function gameOver() {
   state.phase = 'gameover';
-  cancelAnimationFrame(rafId);
   R.showOverlay('你倒下了', `抵達第 ${state.floor} 層 · 持有 ${state.deck.length} 張 Joker`, '再爬一次');
 }
 
@@ -218,7 +210,7 @@ function boot() {
   document.getElementById('version').textContent = VERSION;
   R.showOverlay(
     '數塔 · Number Tower',
-    '選數字牌湊出敵人的「目標數」即攻擊！剛好命中＝暴傷＋連擊，牌型(順子/對子/全偶)給倍率，Joker 滾雪球。當心威脅條！',
+    '選數字牌湊出敵人的「目標數」即攻擊！剛好命中＝暴傷＋連擊，牌型(順子/對子/全偶)給倍率，Joker 滾雪球。出牌後怪物會蓄力，蓄滿就攻擊你——抓準節奏！',
     '進入塔'
   );
 }

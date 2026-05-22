@@ -50,6 +50,10 @@ export function renderTarget() {
   $('target-num').textContent = state.target;
 }
 
+export function setNarration(text) {
+  $('narration').textContent = text;
+}
+
 // 怪物登場動畫
 export function monsterEnter() {
   const m = $('monster-art');
