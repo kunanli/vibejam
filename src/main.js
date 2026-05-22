@@ -5,7 +5,7 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.8.0 · 2026-05-22';
+const VERSION = 'v0.9.0 · 2026-05-22';
 
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 
@@ -120,10 +120,11 @@ function applyHit(result, exact, miss) {
 
   state.enemy.hp -= damage;
   A.playHit(state.combo);
-  if (exact || crit) A.playCrit();
+  if (exact) { A.playExact(); R.celebrate(); }
+  else if (crit) A.playCrit();
   if (miss) { A.playWrong(); R.flashMiss(); }
   R.floatDamage(damage, exact || crit);
-  R.shake(damage >= 200 ? 'big' : 'normal');
+  R.shake(exact || damage >= 200 ? 'big' : 'normal');
 
   R.renderBattle();
   R.renderCombo();

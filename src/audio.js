@@ -33,6 +33,12 @@ export function playCrit() {
   blip({ freq: 1200, slideTo: 1800, dur: 0.18, type: 'square', vol: 0.2 });
 }
 
+// 命中目標：三連升音小慶祝
+export function playExact() {
+  const notes = [660, 990, 1480];
+  notes.forEach((f, i) => setTimeout(() => blip({ freq: f, dur: 0.12, type: 'triangle', vol: 0.2 }), i * 70));
+}
+
 // 答錯：低沉下滑
 export function playWrong() {
   blip({ freq: 240, slideTo: 110, dur: 0.22, type: 'sawtooth', vol: 0.15 });

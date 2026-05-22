@@ -116,6 +116,23 @@ button:hover { background: var(--accent); color: #000; }
 .combo-banner.show { opacity: 1; animation: comboPop .3s; }
 @keyframes comboPop { 0% { transform: translateX(-50%) scale(.6); } 60% { transform: translateX(-50%) scale(1.35); } 100% { transform: translateX(-50%) scale(1); } }
 
+/* 命中目標慶祝：金光 + 星星 */
+.arena::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 6; opacity: 0;
+  background: radial-gradient(circle, rgba(255,207,58,.45), transparent 70%);
+}
+.arena.flash::before { animation: goldFlash .5s ease-out; }
+@keyframes goldFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+.spark {
+  position: absolute; font-size: 30px; pointer-events: none; z-index: 9;
+  animation: sparkFly .72s ease-out forwards;
+}
+@keyframes sparkFly {
+  0% { transform: translate(-50%, -50%) scale(.3); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.3); opacity: 0; }
+}
+
 /* 飄字傷害 */
 .float-layer { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
 .float-dmg {
@@ -170,6 +187,17 @@ button:hover { background: var(--accent); color: #000; }
 .ctl-btn.discard { color: #9aa; }
 .ctl-btn.discard:hover { background: #2a2440; }
 .ctl-btn.disabled { opacity: .3; pointer-events: none; }
+/* 達標時出牌鈕脈動，引導「按這裡」 */
+.ctl-btn.play.ready { animation: readyPulse .6s ease-in-out infinite; }
+@keyframes readyPulse {
+  0%,100% { box-shadow: 0 0 0 rgba(255,207,58,0); transform: scale(1); }
+  50% { box-shadow: 0 0 24px rgba(255,207,58,.95); transform: scale(1.07); }
+}
+
+/* 沒選牌時手牌輕輕脈動，引導點牌 */
+.hand.hint .numcard { animation: cardHint 1.3s ease-in-out infinite; }
+.hand.hint .numcard:nth-child(2n) { animation-delay: .15s; }
+@keyframes cardHint { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 
 /* ---- 出牌飛行 ---- */
 #fly-layer { position: fixed; inset: 0; pointer-events: none; z-index: 100; }

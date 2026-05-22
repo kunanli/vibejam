@@ -89,6 +89,7 @@ export function renderJokers() {
 // 數字手牌（可選取）；onToggle(id) 由 main 提供
 export function renderHand(onToggle) {
   const hand = $('hand');
+  hand.classList.toggle('hint', state.selected.size === 0); // 沒選牌時輕輕脈動提示點牌
   hand.innerHTML = '';
   state.hand.forEach((card, i) => {
     const el = document.createElement('div');
@@ -99,12 +100,41 @@ export function renderHand(onToggle) {
   });
 }
 
-// 選牌即時資訊：總和 / 牌型 / 預估傷害；命中目標時亮綠
+// 選牌即時資訊：總和 / 牌型 / 預估傷害；命中目標時亮綠 + 出牌鈕脈動
 export function renderSelection({ sum, patternName, dmg }) {
   $('sel-sum').textContent = sum;
   $('sel-pattern').textContent = patternName;
   $('sel-dmg').textContent = dmg;
-  $('sum-box').classList.toggle('hit', sum === state.target && sum > 0);
+  const hit = sum === state.target && sum > 0;
+  $('sum-box').classList.toggle('hit', hit);
+  $('play-btn').classList.toggle('ready', hit && state.playsLeft > 0);
+}
+
+// 命中目標慶祝：金光閃 + 怪物周圍噴星星
+export function celebrate() {
+  const arena = document.querySelector('.arena');
+  arena.classList.remove('flash');
+  void arena.offsetWidth;
+  arena.classList.add('flash');
+
+  const layer = $('float-layer');
+  const aRect = arena.getBoundingClientRect();
+  const mRect = $('monster-art').getBoundingClientRect();
+  const cx = ((mRect.left + mRect.width / 2) - aRect.left) / aRect.width * 100;
+  const cy = ((mRect.top + mRect.height / 2) - aRect.top) / aRect.height * 100;
+  for (let i = 0; i < 12; i++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.textContent = Math.random() < 0.5 ? '✨' : '⭐';
+    s.style.left = cx + '%';
+    s.style.top = cy + '%';
+    const ang = Math.random() * Math.PI * 2;
+    const dist = 70 + Math.random() * 90;
+    s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+    s.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+    layer.appendChild(s);
+    setTimeout(() => s.remove(), 720);
+  }
 }
 
 // 飄字傷害（浮在敵人上方）
