@@ -13,19 +13,25 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: radial-gradient(circle at 50% 0%, #241c45, var(--bg));
+  background: #06050d; /* 16:9 外的 letterbox 黑邊 */
   color: var(--text);
   font-family: "Trebuchet MS", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* 固定 16:9 寬屏，依視窗大小自動 letterbox */
 #game {
   position: relative;
-  width: min(680px, 100vw);
-  height: 100vh;
-  margin: 0 auto;
+  width: min(100vw, 177.78vh);
+  height: min(100vh, 56.25vw);
+  background: radial-gradient(circle at 50% 0%, #241c45, var(--bg));
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(0, 0, 0, .7);
 }
 
 .hidden { display: none !important; }
@@ -90,8 +96,8 @@ button:hover { transform: scale(1.06); }
   0% { transform: translateY(-40px) scale(.3); opacity: 0; }
   100% { transform: translateY(0) scale(1); opacity: 1; }
 }
-.monster-art { font-size: 110px; line-height: 1; filter: drop-shadow(0 8px 20px rgba(0,0,0,.6)); animation: bob 2.4s ease-in-out infinite; }
-.monster-img { width: 200px; height: 200px; object-fit: contain; display: block; }
+.monster-art { font-size: 150px; line-height: 1; filter: drop-shadow(0 8px 20px rgba(0,0,0,.6)); animation: bob 2.4s ease-in-out infinite; }
+.monster-img { width: clamp(180px, 24vh, 320px); height: clamp(180px, 24vh, 320px); object-fit: contain; display: block; }
 @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 .monster-name { font-size: 20px; font-weight: bold; margin-top: 6px; }
 .enemy-hp-bar { width: 220px; height: 14px; margin: 8px auto 2px; background: #3a2030; border-radius: 7px; overflow: hidden; }

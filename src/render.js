@@ -5,7 +5,7 @@ const $ = (id) => document.getElementById(id);
 
 // 塔背景：圖層疊在漸層之上，圖檔 404 時自動只剩漸層（優雅退回）
 export function initBackground() {
-  const url = `${import.meta.env.BASE_URL}assets/bg/tower.png`;
+  const url = './assets/bg/tower.png';
   const grad = 'linear-gradient(180deg, #2a2150, #15112b)';
   const img = new Image();
   img.onload = () => {
@@ -77,7 +77,7 @@ export function renderCombo() {
 
 // 卡面：嘗試載入 Recraft 圖，失敗退回 emoji
 function cardArtHTML(card) {
-  const url = `${import.meta.env.BASE_URL}assets/cards/${card.id}.png`;
+  const url = `./assets/cards/${card.id}.png`;
   return `<div class="card-art"><img class="card-img" src="${url}" alt="${card.name}"
     onerror="this.parentNode.textContent='${card.art}'"></div>`;
 }

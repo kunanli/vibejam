@@ -1,7 +1,3 @@
 node_modules/
-dist/
 *.log
 .DS_Store
-
-# Actions 自動建置，毋須版控
-docs/
