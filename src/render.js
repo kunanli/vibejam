@@ -59,6 +59,45 @@ export function showScreen(name) {
   $('reward').classList.toggle('hidden', name !== 'reward');
   $('overlay').classList.toggle('hidden', name !== 'overlay');
   $('story').classList.toggle('hidden', name !== 'story');
+  $('leaderboard').classList.toggle('hidden', name !== 'leaderboard');
+}
+
+// 結局排行榜：分數 + 名字輸入 + Top 榜
+function renderLbList(list) {
+  const ol = $('lb-list');
+  ol.innerHTML = '';
+  list.forEach((row, i) => {
+    const li = document.createElement('li');
+    const rank = document.createElement('span'); rank.className = 'lb-rank'; rank.textContent = i + 1;
+    const nm = document.createElement('span'); nm.className = 'lb-nm'; nm.textContent = row.name; // textContent 防 XSS
+    const sc = document.createElement('span'); sc.className = 'lb-sc'; sc.textContent = row.score;
+    li.append(rank, nm, sc);
+    ol.appendChild(li);
+  });
+}
+
+export function showLeaderboard({ win, score, lastName, onSubmit, fetchTop, onReplay }) {
+  $('lb-title').textContent = win ? '🏆' : '💀';
+  $('lb-score').textContent = score;
+  const nameEl = $('lb-name');
+  const submitBtn = $('lb-submit');
+  nameEl.value = lastName || '';
+  nameEl.disabled = false;
+  submitBtn.disabled = false;
+  let done = false;
+  const refresh = async () => { renderLbList(await fetchTop()); };
+  submitBtn.onclick = async () => {
+    if (done) return;
+    done = true;
+    submitBtn.disabled = true;
+    nameEl.disabled = true;
+    await onSubmit((nameEl.value.trim() || '???').slice(0, 12));
+    await refresh();
+  };
+  nameEl.onkeydown = (ev) => { if (ev.key === 'Enter') submitBtn.click(); };
+  $('lb-replay').onclick = onReplay;
+  showScreen('leaderboard');
+  refresh();
 }
 
 // 語音朗讀（中文），失敗就靜默

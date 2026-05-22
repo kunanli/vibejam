@@ -1,11 +1,13 @@
 import { state, resetRun, HAND_SIZE, PLAYS, DISCARDS, MAX_LAYER } from './state.js';
 import { makeTarget, drawCard, evaluatePlay } from './math.js';
-import { spawnEnemy, globalDiff } from './combat.js';
+import { spawnEnemy, globalDiff, BATTLES_PER_LAYER } from './combat.js';
 import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
+import * as L from './leaderboard.js';
 
-const VERSION = 'v0.16.1 · 2026-05-22';
+const VERSION = 'v0.17.0 · 2026-05-22';
+const SCORE_CAP = MAX_LAYER * BATTLES_PER_LAYER * PLAYS; // 最多可能出牌數，用於通關效率計分
 
 // 每打完一層的繪本故事（家長引導讀／語音朗讀）。img 可放 assets/story/pageN.webp，缺圖用 art emoji
 const STORY = {
@@ -118,6 +120,7 @@ function playCards() {
 
   resolving = true;
   state.playsLeft -= 1;
+  state.playsUsed += 1; // 通關效率計分
   state.hand = state.hand.filter((c) => !state.selected.has(c.id));
   state.selected = new Set();
   refillHand();
@@ -169,6 +172,7 @@ function discardCards() {
 
 function winBattle() {
   A.playWin();
+  state.battlesWon += 1;
   const boss = state.enemy.isBoss;
   R.confettiBurst(boss ? 'big' : 'mid');
   if (boss) {
@@ -203,16 +207,25 @@ function advanceLayer() {
   enterBattle();
 }
 
-function victory() {
-  state.phase = 'gameover';
-  R.showOverlay('🏆', '🗼✨', '🔄');
-  R.confettiBurst('big');
-  setTimeout(() => R.confettiBurst('big'), 400);
-}
+function victory() { endRun(true); }
+function gameOver() { endRun(false); }
 
-function gameOver() {
-  state.phase = 'gameover';
-  R.showOverlay('💀', `🗼 ${state.layer}/${MAX_LAYER}`, '🔄');
+function endRun(win) {
+  state.phase = 'end';
+  if (win) {
+    R.confettiBurst('big');
+    setTimeout(() => R.confettiBurst('big'), 400);
+  }
+  // 通關效率：打越多怪、用越少出牌 → 分數越高
+  const score = state.battlesWon * 1000 + Math.max(0, SCORE_CAP - state.playsUsed);
+  R.showLeaderboard({
+    win,
+    score,
+    lastName: L.getName(),
+    onSubmit: async (name) => { L.setName(name); await L.submitScore(name, score); },
+    fetchTop: () => L.topScores(10),
+    onReplay: () => { A.playClick(); startRun(); },
+  });
 }
 
 // ---- 輸入 ----

@@ -18,6 +18,8 @@ export const state = {
   playsLeft: PLAYS,
   discardsLeft: DISCARDS,
   justDrawn: new Set(), // 本次新抽到的手牌 id（給發牌動畫）
+  playsUsed: 0,   // 本局累計出牌次數（給通關效率計分）
+  battlesWon: 0,  // 本局累計打倒怪物數
 };
 
 export function resetRun() {
@@ -34,4 +36,6 @@ export function resetRun() {
   state.playsLeft = PLAYS;
   state.discardsLeft = DISCARDS;
   state.justDrawn = new Set();
+  state.playsUsed = 0;
+  state.battlesWon = 0;
 }
