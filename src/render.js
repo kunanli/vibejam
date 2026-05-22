@@ -3,15 +3,47 @@ import { state, MAX_FLOOR } from './state.js';
 
 const $ = (id) => document.getElementById(id);
 
-// 塔背景：圖層疊在漸層之上，圖檔 404 時自動只剩漸層（優雅退回）
-export function initBackground() {
-  const url = './assets/bg/tower.png';
-  const grad = 'radial-gradient(circle at 70% 25%, #2f2660, #15112b)';
+// 每層背景：載入 assets/bg/floorN.webp（疊一層暗罩保可讀性），缺圖維持 CSS 漸層
+export function setArenaBg(floor) {
+  const arena = document.querySelector('.arena');
+  arena.style.backgroundImage = ''; // 先回到 CSS 預設漸層
+  const url = `./assets/bg/floor${floor}.webp`;
   const img = new Image();
   img.onload = () => {
-    document.querySelector('.arena').style.backgroundImage = `url("${url}"), ${grad}`;
+    arena.style.backgroundImage =
+      `linear-gradient(rgba(0,0,0,.4), rgba(0,0,0,.6)), url("${url}")`;
+    arena.style.backgroundSize = 'cover';
+    arena.style.backgroundPosition = 'center';
   };
-  img.src = url; // 失敗則維持漸層
+  img.src = url;
+}
+
+// 塔層進度（左上）：🗼 + 三格，已過綠、當前金色脈動、未到灰
+export function renderProgress() {
+  const wrap = $('tower-progress');
+  let html = '<span class="tp-ico">🗼</span>';
+  for (let i = 1; i <= MAX_FLOOR; i++) {
+    const cls = i < state.floor ? 'done' : i === state.floor ? 'cur' : 'next';
+    html += `<span class="tp-pip ${cls}">${i}</span>`;
+  }
+  wrap.innerHTML = html;
+}
+
+// 場景點綴（草等小素材）：沿地面散佈，缺圖自動移除
+export function renderDecor() {
+  const d = $('decor');
+  d.innerHTML = '';
+  const url = './assets/props/grass.webp';
+  const spots = [5, 20, 38, 60, 78, 93];
+  spots.forEach((x, i) => {
+    const g = document.createElement('img');
+    g.className = 'decor-grass';
+    g.style.left = x + '%';
+    g.style.setProperty('--s', (0.7 + (i % 3) * 0.28).toFixed(2));
+    g.onerror = () => g.remove();
+    g.src = url;
+    d.appendChild(g);
+  });
 }
 
 export function showScreen(name) {
@@ -58,8 +90,8 @@ function spriteHTML(slot, img, art, cls) {
 }
 
 export function renderBattle() {
-  const { enemy, floor } = state;
-  $('floor-num').textContent = `${floor}/${MAX_FLOOR}`;
+  const { enemy } = state;
+  renderProgress();
   if (enemy) {
     spriteHTML($('monster-art'), enemy.img, enemy.art, 'sprite-img');
     $('enemy-remain').textContent = Math.max(0, Math.round(enemy.hp)); // 還需傷害

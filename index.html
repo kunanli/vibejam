@@ -24,12 +24,13 @@
       <!-- 戰鬥畫面（免識字 · Balatro 關卡制） -->
       <div id="battle" class="battle hidden">
         <div class="topbar">
-          <div class="floor-tag">🗼 <span id="floor-num">1</span></div>
+          <div class="tower-progress" id="tower-progress"></div>
           <div class="jokers" id="jokers"></div>
         </div>
 
         <!-- 戰鬥區：大怪物置中，目標/算式緊鄰怪物 -->
         <div class="arena">
+          <div class="decor" id="decor"></div>
           <div id="float-layer" class="float-layer"></div>
 
           <div class="monster-wrap">
@@ -69,7 +70,7 @@
 
       <!-- 獎勵三選一 -->
       <div id="reward" class="reward hidden">
-        <h2>戰利品 · 選一張 Joker</h2>
+        <h2>🎁</h2>
         <div class="reward-cards" id="reward-cards"></div>
       </div>
     </div>

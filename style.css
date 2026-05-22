@@ -56,6 +56,28 @@ button:hover { background: var(--accent); color: #000; }
 
 .topbar { display: flex; align-items: center; gap: 14px; }
 .floor-tag { font-weight: bold; font-size: 26px; color: var(--accent); white-space: nowrap; }
+
+/* 塔層進度（醒目） */
+.tower-progress { display: flex; align-items: center; gap: 8px; }
+.tp-ico { font-size: 30px; }
+.tp-pip {
+  width: 36px; height: 36px; border-radius: 8px; border: 3px solid #4a4a5a; background: #000;
+  display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: #777;
+}
+.tp-pip.done { border-color: #46d96a; color: #46d96a; }
+.tp-pip.cur {
+  border-color: var(--accent); color: #000; background: var(--accent); transform: scale(1.2);
+  animation: tpPulse 1s ease-in-out infinite;
+}
+.tp-pip.next { opacity: .45; }
+@keyframes tpPulse { 0%,100% { box-shadow: 0 0 0 rgba(255,207,58,0); } 50% { box-shadow: 0 0 16px rgba(255,207,58,.9); } }
+
+/* 場景點綴素材（草等） */
+.decor { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.decor-grass {
+  position: absolute; bottom: 2%; height: clamp(50px, 11vh, 100px);
+  transform: translateX(-50%) scale(var(--s, 1)); transform-origin: bottom center;
+}
 .jokers { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
 .joker {
   height: 40px; padding: 0 6px; border-radius: 6px; background: #000;
