@@ -104,7 +104,15 @@ export function renderBattle() {
   const { enemy } = state;
   renderProgress();
   if (enemy) {
-    spriteHTML($('monster-art'), enemy.img, enemy.art, 'sprite-img');
+    const slot = $('monster-art');
+    if (enemy.img) {
+      const onerr = enemy.fallback
+        ? `if(this.dataset.f){this.parentNode.textContent='${enemy.art}'}else{this.dataset.f=1;this.src='${enemy.fallback}'}`
+        : `this.parentNode.textContent='${enemy.art}'`;
+      slot.innerHTML = `<img class="sprite-img" src="${enemy.img}" alt="" onerror="${onerr}">`;
+    } else {
+      slot.textContent = enemy.art;
+    }
     $('enemy-remain').textContent = Math.max(0, Math.round(enemy.hp)); // 還需傷害
   }
 }

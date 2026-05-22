@@ -11,15 +11,35 @@
 
 ---
 
-## 1. 怪物 `assets/monsters/`  ✅ 已完成（可重生更好看的）
-| 檔名 | 角色 | Recraft prompt |
-|---|---|---|
-| `slime.webp` | L1 史萊姆 | a small translucent green slime monster, jelly body, cute menacing face, front view, transparent background |
-| `goblin.webp` | L2 哥布林 | a scrawny goblin with crude dagger, big ears, sly grin, front view, transparent background |
-| `skeleton.webp` | L3 前哨骷髏（目前未用，可留） | an animated skeleton warrior holding a notched sword, glowing eye sockets, front view, transparent background |
-| `boss.webp` | L3 塔之守衛（Boss） | a towering armored tower-guardian boss, ornate geometric armor, imposing, front view, transparent background |
+## 1. 怪物 `assets/monsters/`
+**目前結構**：3 層、每層 1 隻雜魚 → 1 隻 Boss，共 6 場。雜魚每層不同；Boss 支援每層不同圖。
 
-> 目前 3 層塔用到的是 **slime → goblin → boss**。
+### 1a. 雜魚（每層一種，現在用到）✅ 已完成
+| 檔名 | 出現層 | Recraft prompt |
+|---|---|---|
+| `slime.webp` | L1 | a small translucent green slime monster, jelly body, cute menacing face, front view, transparent background |
+| `goblin.webp` | L2 | a scrawny goblin with crude dagger, big ears, sly grin, front view, transparent background |
+| `skeleton.webp` | L3 | an animated skeleton warrior holding a notched sword, glowing eye sockets, front view, transparent background |
+
+### 1b. Boss（每層各一隻，建議生不同的）⬜ 待生
+程式會優先載入 `boss{層}.webp`，缺圖自動回退到通用 `boss.webp`（已有），再回退 emoji——沒生不會壞。
+| 檔名 | 出現層 | Recraft prompt |
+|---|---|---|
+| `boss1.webp` | L1 Boss | a chubby cute slime king boss with a tiny crown, jelly body, transparent background |
+| `boss2.webp` | L2 Boss | a big goblin warlord boss with spiked armor and club, menacing but cartoonish, transparent background |
+| `boss3.webp` | L3 Boss（最終） | a towering armored tower-guardian boss, ornate geometric armor, glowing runes, imposing, transparent background |
+| `boss.webp` | 通用回退 | （已有，作為缺圖時的備援，可不動） |
+
+### 1c. 想要更多雜魚種類？（可選，需我接線）
+若想每層 2–3 隻不同雜魚（會增加總場數），先生圖、跟我說，我把 `MOBS_PER_LAYER` 與對應名單接上：
+| 建議檔名 | Recraft prompt |
+|---|---|
+| `bat.webp` | a small purple cave bat, big eyes, cute, front view, transparent background |
+| `spider.webp` | a round fuzzy spider with big eyes, cute creepy, front view, transparent background |
+| `ghost.webp` | a floating white ghost with a mischievous face, front view, transparent background |
+| `mushroom.webp` | a walking red mushroom monster with angry face, front view, transparent background |
+
+> 規格：去背、正方約 512×512、童書插畫風。生好丟進 `assets/monsters/`（或給我壓縮）。
 
 ---
 

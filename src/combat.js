@@ -26,7 +26,10 @@ export function spawnEnemy(layer, idx) {
   const m = isBoss ? BOSS : MOB_BY_LAYER[(layer - 1) % MOB_BY_LAYER.length];
   const g = globalDiff(layer, idx);
   const hp = Math.round((30 + g * 30 + g * g * 7) * (isBoss ? 1.7 : 1));
-  return { name: m.name, art: m.art, img: m.img, hp, maxHp: hp, isBoss };
+  // Boss 支援每層不同圖 boss{layer}.webp，缺圖回退到通用 boss.webp，再回退 emoji
+  const img = isBoss ? `./assets/monsters/boss${layer}.webp` : m.img;
+  const fallback = isBoss ? './assets/monsters/boss.webp' : null;
+  return { name: m.name, art: m.art, img, fallback, hp, maxHp: hp, isBoss };
 }
 
 export const BASE_CHIPS = 10;
