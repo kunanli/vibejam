@@ -9,11 +9,11 @@ const MONSTERS = [
   { name: '塔之守衛', art: '🛡️', img: './assets/monsters/boss.png' },
 ];
 
-// 依樓層生成怪物：每 4 層為 Boss（守衛），HP / 威脅速率 / 攻擊隨層膨脹
+// 依樓層生成怪物：每 4 層為 Boss（守衛），HP 隨層膨脹（無攻擊，Balatro 關卡制）
 export function spawnEnemy(floor) {
   const idx = (floor - 1) % MONSTERS.length;
   const isBoss = idx === MONSTERS.length - 1; // 第 4 格＝Boss
-  const cycle = Math.floor((floor - 1) / MONSTERS.length); // 第幾輪（0 起算）
+  const cycle = Math.floor((floor - 1) / MONSTERS.length);
   const m = MONSTERS[idx];
   const hp = Math.round((40 + floor * 35 + floor * floor * 6) * (isBoss ? 1.8 : 1));
   return {
@@ -22,9 +22,6 @@ export function spawnEnemy(floor) {
     img: m.img,
     hp,
     maxHp: hp,
-    threat: 0, // 蓄力 0..1
-    charge: Math.min(0.6, (0.34 + floor * 0.02) * (isBoss ? 1.25 : 1)), // 每出一手累積；滿了攻擊
-    attack: Math.round((6 + floor * 3) * (isBoss ? 1.5 : 1)),
     isBoss,
   };
 }

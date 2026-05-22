@@ -21,52 +21,38 @@
         </div>
       </div>
 
-      <!-- 戰鬥畫面（免識字 · 置中） -->
+      <!-- 戰鬥畫面（免識字 · Balatro 關卡制） -->
       <div id="battle" class="battle hidden">
         <div class="topbar">
           <div class="floor-tag">🗼 <span id="floor-num">1</span></div>
           <div class="jokers" id="jokers"></div>
         </div>
 
-        <!-- 戰鬥區：全部置中、由上而下 目標→怪物→狀態→你 -->
+        <!-- 戰鬥區：大怪物置中，目標/算式緊鄰怪物 -->
         <div class="arena">
           <div id="float-layer" class="float-layer"></div>
 
-          <div class="target-box">🎯 <span id="target-num">24</span></div>
-
-          <div id="monster-art" class="sprite monster-sprite">👹</div>
-
-          <div class="enemy-status">
-            <div class="bar-row">
-              <span class="ic">❤️</span>
-              <div class="bar"><div id="enemy-hp-fill" class="bar-fill enemy"></div></div>
-              <span class="bar-num" id="enemy-hp-text">50/50</span>
-            </div>
-            <div class="bar-row">
-              <span class="ic">⚡</span>
-              <div class="bar slim"><div id="threat-fill" class="threat-fill"></div></div>
-            </div>
+          <div class="monster-wrap">
+            <div id="monster-art" class="sprite monster-sprite">👹</div>
+            <div class="remain" id="enemy-remain">137</div>
           </div>
 
-          <div id="player-art" class="sprite player-sprite">🧙</div>
+          <!-- 目標 vs 你的總和 + 預估傷害，直接看有沒有達標 -->
+          <div class="target-cluster">
+            <div class="t-line"><span class="t-ic">🎯</span><span id="target-num">24</span></div>
+            <div class="t-line sum" id="sum-box"><span class="t-ic">🟰</span><span id="sel-sum">0</span></div>
+            <div class="t-line dmg"><span class="t-ic">💥</span><span id="sel-dmg">0</span><span class="mult" id="sel-pattern">×1</span></div>
+          </div>
 
           <div class="combo-banner" id="combo-banner"></div>
-          <div class="narration" id="narration"></div>
         </div>
 
-        <!-- 行動框：大數字牌 + 置中控制列 -->
+        <!-- 行動框：大數字牌 + 出牌/棄牌（含剩餘次數） -->
         <div class="ut-actionbox" id="play-bar">
           <div class="hand" id="hand"></div>
           <div class="control-row">
-            <span class="ctl">🟰<b id="sel-sum">0</b></span>
-            <span class="ctl">⭐<b id="sel-pattern">×1</b></span>
-            <span class="ctl dmg">💥<b id="sel-dmg">0</b></span>
-            <button id="play-btn" class="play-btn">⚔️</button>
-          </div>
-          <div class="player-hp-row">
-            <span class="ic">❤️</span>
-            <div class="bar"><div id="player-hp-fill" class="bar-fill player"></div></div>
-            <span class="bar-num" id="player-hp-text">100/100</span>
+            <button id="discard-btn" class="ctl-btn discard">🗑 <b id="discards-left">3</b></button>
+            <button id="play-btn" class="ctl-btn play">⚔️ <b id="plays-left">5</b></button>
           </div>
         </div>
       </div>

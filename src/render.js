@@ -29,19 +29,11 @@ function spriteHTML(slot, img, art, cls) {
 }
 
 export function renderBattle() {
-  const { player, enemy, floor } = state;
+  const { enemy, floor } = state;
   $('floor-num').textContent = floor;
-
-  const hpPct = Math.max(0, (player.hp / player.maxHp) * 100);
-  $('player-hp-fill').style.width = hpPct + '%';
-  $('player-hp-text').textContent = `${Math.max(0, Math.round(player.hp))}/${player.maxHp}`;
-  spriteHTML($('player-art'), './assets/player/hero-back.png', '🧙', 'sprite-img');
-
   if (enemy) {
     spriteHTML($('monster-art'), enemy.img, enemy.art, 'sprite-img');
-    const ehp = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
-    $('enemy-hp-fill').style.width = ehp + '%';
-    $('enemy-hp-text').textContent = `${Math.max(0, Math.round(enemy.hp))}/${enemy.maxHp}`;
+    $('enemy-remain').textContent = Math.max(0, Math.round(enemy.hp)); // 還需傷害
   }
 }
 
@@ -49,8 +41,12 @@ export function renderTarget() {
   $('target-num').textContent = state.target;
 }
 
-export function setNarration(text) {
-  $('narration').textContent = text;
+// 剩餘出牌 / 棄牌次數，0 時鈕變灰
+export function renderCounts() {
+  $('plays-left').textContent = state.playsLeft;
+  $('discards-left').textContent = state.discardsLeft;
+  $('play-btn').classList.toggle('disabled', state.playsLeft <= 0);
+  $('discard-btn').classList.toggle('disabled', state.discardsLeft <= 0 || state.selected.size === 0);
 }
 
 // 怪物登場動畫
@@ -59,13 +55,6 @@ export function monsterEnter() {
   m.classList.remove('enter');
   void m.offsetWidth;
   m.classList.add('enter');
-}
-
-export function renderThreat() {
-  const t = state.enemy ? Math.min(1, state.enemy.threat) : 0;
-  const fill = $('threat-fill');
-  fill.style.width = t * 100 + '%';
-  fill.classList.toggle('danger', t > 0.7);
 }
 
 export function renderCombo() {
@@ -110,11 +99,12 @@ export function renderHand(onToggle) {
   });
 }
 
-// 選牌即時資訊：總和 / 牌型 / 預估傷害（由 main 算好傳入）
+// 選牌即時資訊：總和 / 牌型 / 預估傷害；命中目標時亮綠
 export function renderSelection({ sum, patternName, dmg }) {
   $('sel-sum').textContent = sum;
   $('sel-pattern').textContent = patternName;
   $('sel-dmg').textContent = dmg;
+  $('sum-box').classList.toggle('hit', sum === state.target && sum > 0);
 }
 
 // 飄字傷害（浮在敵人上方）
@@ -132,30 +122,11 @@ export function floatDamage(amount, crit) {
   setTimeout(() => el.remove(), 1100);
 }
 
-export function floatHeal(amount) {
-  const layer = $('float-layer');
-  const el = document.createElement('div');
-  el.className = 'float-dmg heal';
-  el.textContent = '+' + amount;
-  el.style.left = 18 + Math.random() * 10 + '%';
-  el.style.top = 60 + Math.random() * 8 + '%';
-  layer.appendChild(el);
-  setTimeout(() => el.remove(), 1100);
-}
-
 export function shake(intensity = 'normal') {
   const battle = $('battle');
   battle.classList.remove('shake', 'shake-big');
   void battle.offsetWidth;
   battle.classList.add(intensity === 'big' ? 'shake-big' : 'shake');
-}
-
-// 玩家受擊：全屏紅閃
-export function playerHit() {
-  const battle = $('battle');
-  battle.classList.remove('hurt');
-  void battle.offsetWidth;
-  battle.classList.add('hurt');
 }
 
 // 出牌飛向敵人：選中的數字牌從手牌位置飛到怪物 sprite 中心，結束呼叫 onArrive

@@ -67,21 +67,21 @@ export const CARD_POOL = [
   },
   {
     id: 'vamp',
-    name: '吸血符',
-    art: '🩸',
-    symbol: '❤️+6',
+    name: '尖牙',
+    art: '🦷',
+    symbol: '+25',
     rarity: 'common',
-    desc: '答對回復 6 HP',
-    apply: (ctx) => { ctx.heal += 6; },
+    desc: '基礎傷害 +25',
+    apply: (ctx) => { ctx.chips += 25; },
   },
   {
     id: 'calm',
-    name: '鎮定香',
-    art: '🌿',
-    symbol: '⚡▽',
+    name: '幸運草',
+    art: '🍀',
+    symbol: '×1.5',
     rarity: 'common',
-    desc: '降低敵人蓄力',
-    apply: (ctx) => { ctx.threatRelief += 0.34; },
+    desc: '倍率 ×1.5',
+    apply: (ctx) => { ctx.mult *= 1.5; },
   },
   {
     id: 'crit',
@@ -107,12 +107,11 @@ export function computeDamage(deck, { answer, combo, baseChips, startMult = 1 })
     answer,
     combo,
     heal: 0,
-    threatRelief: 0, // 偏回合：預設不自動降蓄力，只有 calm 卡會加
     crit: false,
   };
   for (const card of deck) card.apply(ctx);
   const damage = Math.max(1, Math.round(ctx.chips * ctx.mult));
-  return { damage, heal: ctx.heal, threatRelief: ctx.threatRelief, crit: ctx.crit };
+  return { damage, heal: ctx.heal, crit: ctx.crit };
 }
 
 // 隨機抽 n 張不重複（可重複持有，純隨機）卡牌作為獎勵

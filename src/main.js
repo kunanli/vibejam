@@ -1,11 +1,11 @@
-import { state, resetRun, HAND_SIZE } from './state.js';
+import { state, resetRun, HAND_SIZE, PLAYS, DISCARDS } from './state.js';
 import { makeTarget, drawCard, evaluatePlay } from './math.js';
 import { spawnEnemy } from './combat.js';
 import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.7.0 · 2026-05-22';
+const VERSION = 'v0.8.0 · 2026-05-22';
 
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 
@@ -24,17 +24,18 @@ function enterFloor() {
   state.enemy = spawnEnemy(state.floor);
   state.hand = [];
   state.selected = new Set();
+  state.playsLeft = PLAYS;
+  state.discardsLeft = DISCARDS;
   refillHand();
   newTarget();
   R.showScreen('battle');
   R.renderBattle();
-  R.renderThreat();
   R.renderJokers();
   R.renderHand(toggleCard);
   R.renderCombo();
+  R.renderCounts();
   renderSelection();
   R.monsterEnter();
-  R.setNarration('');
 }
 
 function newTarget() {
@@ -48,16 +49,15 @@ function refillHand() {
   }
 }
 
-// 目前選中的牌值
 function selectedValues() {
   return state.hand.filter((c) => state.selected.has(c.id)).map((c) => c.value);
 }
 
-// 即時預估（總和 / 牌型 / 傷害）
+// 即時預估（總和 / 倍率 / 傷害）
 function renderSelection() {
   const vals = selectedValues();
   if (vals.length === 0) {
-    R.renderSelection({ sum: 0, patternName: '—', dmg: 0 });
+    R.renderSelection({ sum: 0, patternName: '×1', dmg: 0 });
     return;
   }
   const { sum, baseChips, pattern } = evaluatePlay(vals, state.target);
@@ -71,37 +71,17 @@ function renderSelection() {
 }
 
 function toggleCard(id) {
-  if (state.phase !== 'battle') return;
+  if (state.phase !== 'battle' || resolving) return;
   if (state.selected.has(id)) state.selected.delete(id);
   else state.selected.add(id);
   A.playClick();
   R.renderHand(toggleCard);
+  R.renderCounts();
   renderSelection();
 }
 
-// 偏回合：每出一手後敵人行動，蓄力滿了才攻擊
-function enemyTurn() {
-  const e = state.enemy;
-  e.threat += e.charge;
-  if (e.threat >= 1) {
-    e.threat = 0;
-    state.combo = 0;
-    state.player.hp -= e.attack;
-    A.playHurt();
-    R.shake('big');
-    R.playerHit();
-    R.setNarration('💥');
-    if (state.player.hp <= 0) { R.renderBattle(); gameOver(); return; }
-  } else {
-    R.setNarration('⚡');
-  }
-  R.renderThreat();
-  R.renderBattle();
-  R.renderCombo();
-}
-
 function playCards() {
-  if (state.phase !== 'battle' || resolving) return;
+  if (state.phase !== 'battle' || resolving || state.playsLeft <= 0) return;
   const used = state.hand.filter((c) => state.selected.has(c.id));
   if (used.length === 0) return;
   const vals = used.map((c) => c.value);
@@ -119,48 +99,52 @@ function playCards() {
   });
   const miss = diff > 2;
 
-  // 抓選中牌的 DOM（飛行用），趁重繪前
   const cardEls = [...document.querySelectorAll('#hand .numcard.selected')];
 
   resolving = true;
-  // 用掉的牌離手、補牌、重繪（牌飛出時手牌即更新）
+  state.playsLeft -= 1;
   state.hand = state.hand.filter((c) => !state.selected.has(c.id));
   state.selected = new Set();
   refillHand();
   R.renderHand(toggleCard);
+  R.renderCounts();
   renderSelection();
 
-  // 飛到敵人才結算傷害
   R.flyCardsToEnemy(cardEls, () => applyHit(result, exact, miss));
 }
 
 function applyHit(result, exact, miss) {
   resolving = false;
-  if (state.phase !== 'battle') return; // 動畫途中已換場
-  const { damage, heal, crit, threatRelief } = result;
+  if (state.phase !== 'battle') return;
+  const { damage, crit } = result;
 
   state.enemy.hp -= damage;
-  if (threatRelief > 0) state.enemy.threat = Math.max(0, state.enemy.threat - threatRelief);
   A.playHit(state.combo);
   if (exact || crit) A.playCrit();
   if (miss) { A.playWrong(); R.flashMiss(); }
   R.floatDamage(damage, exact || crit);
   R.shake(damage >= 200 ? 'big' : 'normal');
 
-  if (heal > 0) {
-    state.player.hp = Math.min(state.player.maxHp, state.player.hp + heal);
-    R.floatHeal(heal);
-  }
-
   R.renderBattle();
   R.renderCombo();
 
   if (state.enemy.hp <= 0) { winFloor(); return; }
+  if (state.playsLeft <= 0) { gameOver(); return; } // 出牌用完仍未打倒
 
-  // 敵人這一手才行動
-  enemyTurn();
-  if (state.phase !== 'battle') return; // 玩家倒下
   newTarget();
+  renderSelection();
+}
+
+function discardCards() {
+  if (state.phase !== 'battle' || resolving) return;
+  if (state.discardsLeft <= 0 || state.selected.size === 0) return;
+  state.discardsLeft -= 1;
+  state.hand = state.hand.filter((c) => !state.selected.has(c.id));
+  state.selected = new Set();
+  refillHand();
+  A.playClick();
+  R.renderHand(toggleCard);
+  R.renderCounts();
   renderSelection();
 }
 
@@ -185,6 +169,7 @@ function gameOver() {
 // ---- 輸入 ----
 function bindInput() {
   document.getElementById('play-btn').addEventListener('click', playCards);
+  document.getElementById('discard-btn').addEventListener('click', discardCards);
   document.getElementById('overlay-btn').addEventListener('click', () => {
     A.playClick();
     startRun();
@@ -196,9 +181,11 @@ function bindInput() {
       ev.preventDefault();
       state.selected = new Set();
       R.renderHand(toggleCard);
+      R.renderCounts();
       renderSelection();
       return;
     }
+    if (ev.key === 'd' || ev.key === 'D') { discardCards(); return; }
     // 數字鍵 1–7 切換對應手牌
     const n = parseInt(ev.key, 10);
     if (n >= 1 && n <= state.hand.length) toggleCard(state.hand[n - 1].id);

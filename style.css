@@ -73,62 +73,48 @@ button:hover { background: var(--accent); color: #000; }
   background:
     linear-gradient(180deg, transparent 52%, rgba(64,54,116,.5) 60%, rgba(28,24,58,.92) 100%),
     radial-gradient(circle at 50% 30%, #1c1830, #000 78%);
-  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-  padding: 10px 8px 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 10px 8px;
 }
 
-.target-box {
-  border: 3px solid var(--accent); border-radius: 999px; background: #000;
-  padding: 4px 22px; font-size: 30px; color: var(--accent); z-index: 6;
-}
-.target-box span { font-size: 48px; font-weight: bold; }
-
+/* 怪物（大、置中）+ 還需傷害徽章 */
+.monster-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
 .sprite { position: relative; line-height: 1; }
 .sprite-img { object-fit: contain; display: block; }
-/* 腳下平台：遠(怪物)小、近(玩家)大 → 景深 */
-.sprite::after {
-  content: ""; position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%);
-  border-radius: 50%; z-index: -1;
+.monster-sprite { font-size: 150px; filter: drop-shadow(0 10px 16px rgba(0,0,0,.55)); animation: bob 2.6s ease-in-out infinite; }
+.monster-sprite .sprite-img { width: clamp(170px, 38vh, 440px); height: clamp(170px, 38vh, 440px); }
+.monster-sprite::after {
+  content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%);
+  width: 78%; height: 22px; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.55), transparent 72%); z-index: -1;
 }
-
-/* 怪物＝遠景：較小、較淡投影、靠上 */
-.monster-sprite { font-size: 110px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.45)); animation: bob 2.4s ease-in-out infinite; }
-.monster-sprite .sprite-img { width: clamp(110px, 22vh, 250px); height: clamp(110px, 22vh, 250px); }
-.monster-sprite::after { width: 70%; height: 16px; background: radial-gradient(ellipse at center, rgba(120,100,200,.4), transparent 70%); }
-.monster-sprite.enter { animation: monsterEnter .5s cubic-bezier(.2,1.4,.4,1), bob 2.4s ease-in-out infinite .5s; }
-@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.monster-sprite.enter { animation: monsterEnter .5s cubic-bezier(.2,1.4,.4,1), bob 2.6s ease-in-out infinite .5s; }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes monsterEnter { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-/* 玩家＝近景：較大、較重投影、靠下 */
-.player-sprite { font-size: 130px; filter: drop-shadow(0 14px 16px rgba(0,0,0,.6)); }
-.player-sprite .sprite-img { width: clamp(150px, 27vh, 320px); height: clamp(150px, 27vh, 320px); }
-.player-sprite::after { width: 92%; height: 28px; background: radial-gradient(ellipse at center, rgba(0,0,0,.6), transparent 70%); }
+/* 還需傷害（無條，純數字徽章） */
+.remain {
+  position: absolute; top: 2%; right: 6%;
+  font-size: clamp(34px, 6vh, 56px); font-weight: 900; color: #fff;
+  text-shadow: 0 2px 0 #000, 0 0 12px rgba(226,69,90,.95);
+}
 
-/* 怪物狀態：HP + 蓄力，置中於怪物下方 */
-.enemy-status { display: flex; flex-direction: column; gap: 4px; align-items: center; }
-.bar-row { display: flex; align-items: center; gap: 8px; }
-.ic { font-size: 22px; }
-.bar { width: clamp(200px, 34vw, 380px); height: 16px; background: #2a2440; border: 2px solid var(--line); border-radius: 4px; overflow: hidden; }
-.bar.slim { height: 11px; }
-.bar-fill { height: 100%; width: 100%; transition: width .25s; }
-.bar-fill.enemy { background: linear-gradient(90deg, #b3273a, var(--enemy)); }
-.bar-fill.player { background: var(--accent); }
-.bar-num { font-size: 20px; min-width: 64px; }
-.threat-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ffb347, var(--threat)); transition: width .2s; }
-.threat-fill.danger { animation: pulse .4s ease-in-out infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+/* 目標 / 你的總和 / 預估傷害：緊鄰怪物，直接看有沒有達標 */
+.target-cluster { display: flex; flex-direction: column; align-items: center; gap: 2px; z-index: 6; }
+.t-line { font-size: 34px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+.t-ic { font-size: 30px; }
+#target-num { color: var(--accent); font-size: 46px; }
+#sum-box { color: #9aa; }
+#sum-box.hit { color: var(--accent); text-shadow: 0 0 16px rgba(255,207,58,.9); }
+.t-line.dmg { font-size: 30px; color: #ff5d8f; }
+.t-line.dmg .mult { color: var(--accent); font-size: 24px; }
 
 .combo-banner {
-  position: absolute; top: 8%; left: 50%; transform: translateX(-50%);
-  font-weight: 900; font-size: 32px; color: var(--accent); opacity: 0; pointer-events: none; z-index: 7;
+  position: absolute; top: 5%; left: 50%; transform: translateX(-50%);
+  font-weight: 900; font-size: 34px; color: var(--accent); opacity: 0; pointer-events: none; z-index: 7;
 }
 .combo-banner.show { opacity: 1; animation: comboPop .3s; }
 @keyframes comboPop { 0% { transform: translateX(-50%) scale(.6); } 60% { transform: translateX(-50%) scale(1.35); } 100% { transform: translateX(-50%) scale(1); } }
-
-.narration {
-  position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
-  font-size: 56px; pointer-events: none; z-index: 7;
-}
 
 /* 飄字傷害 */
 .float-layer { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
@@ -171,14 +157,19 @@ button:hover { background: var(--accent); color: #000; }
 .numcard.selected .numcard-val { color: var(--accent); }
 .numcard-key { position: absolute; top: 2px; left: 7px; font-size: 18px; opacity: .55; }
 
-/* 置中控制列：總和 / 倍率 / 傷害 / 出牌 */
-.control-row { display: flex; align-items: center; justify-content: center; gap: 22px; }
-.ctl { font-size: 26px; display: flex; align-items: center; gap: 4px; }
-.ctl b { font-size: 32px; color: var(--accent); }
-.ctl.dmg b { color: #ff5d8f; }
-.play-btn { margin: 0; padding: 6px 22px; font-size: 36px; }
-
-.player-hp-row { display: flex; align-items: center; gap: 8px; }
+/* 出牌 / 棄牌按鈕（含剩餘次數） */
+.control-row { display: flex; align-items: center; justify-content: center; gap: 24px; }
+.ctl-btn {
+  margin: 0; padding: 8px 26px; font-size: 34px; display: flex; align-items: center; gap: 8px;
+  border: 3px solid var(--line); border-radius: 8px; background: #000; cursor: pointer;
+  font-family: inherit; transition: all .1s;
+}
+.ctl-btn b { font-size: 30px; }
+.ctl-btn.play { color: var(--accent); border-color: var(--accent); }
+.ctl-btn.play:hover { background: var(--accent); color: #000; }
+.ctl-btn.discard { color: #9aa; }
+.ctl-btn.discard:hover { background: #2a2440; }
+.ctl-btn.disabled { opacity: .3; pointer-events: none; }
 
 /* ---- 出牌飛行 ---- */
 #fly-layer { position: fixed; inset: 0; pointer-events: none; z-index: 100; }
