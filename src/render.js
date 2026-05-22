@@ -39,7 +39,6 @@ export function renderBattle() {
 
   if (enemy) {
     spriteHTML($('monster-art'), enemy.img, enemy.art, 'sprite-img');
-    $('monster-name').textContent = enemy.name;
     const ehp = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
     $('enemy-hp-fill').style.width = ehp + '%';
     $('enemy-hp-text').textContent = `${Math.max(0, Math.round(enemy.hp))}/${enemy.maxHp}`;
@@ -72,7 +71,7 @@ export function renderThreat() {
 export function renderCombo() {
   const banner = $('combo-banner');
   if (state.combo >= 2) {
-    banner.textContent = `連擊 ×${state.combo}！`;
+    banner.textContent = `🔥×${state.combo}`;
     banner.classList.add('show');
   } else {
     banner.classList.remove('show');
@@ -93,7 +92,7 @@ export function renderJokers() {
     const el = document.createElement('div');
     el.className = `joker rarity-${card.rarity}`;
     el.title = `${card.name}：${card.desc}`;
-    el.innerHTML = jokerArtHTML(card);
+    el.innerHTML = `${jokerArtHTML(card)}<span class="joker-sym">${card.symbol}</span>`;
     wrap.appendChild(el);
   }
 }
@@ -126,9 +125,9 @@ export function floatDamage(amount, crit) {
   if (amount >= 1000) el.classList.add('huge');
   else if (amount >= 200) el.classList.add('big');
   if (crit) el.classList.add('crit');
-  el.textContent = (crit ? '暴擊 ' : '') + amount;
-  el.style.left = 58 + Math.random() * 14 + '%';
-  el.style.top = 28 + Math.random() * 10 + '%';
+  el.textContent = amount;
+  el.style.left = 42 + Math.random() * 16 + '%';
+  el.style.top = 20 + Math.random() * 10 + '%';
   layer.appendChild(el);
   setTimeout(() => el.remove(), 1100);
 }
@@ -219,11 +218,10 @@ export function renderRewards(cards, onPick) {
     const url = `./assets/cards/${card.id}.png`;
     const el = document.createElement('div');
     el.className = `card reward-card rarity-${card.rarity}`;
+    el.title = `${card.name}：${card.desc}`;
     el.innerHTML = `<div class="card-art"><img class="card-img" src="${url}" alt="${card.name}"
         onerror="this.parentNode.textContent='${card.art}'"></div>
-      <div class="card-name">${card.name}</div>
-      <div class="card-desc">${card.desc}</div>
-      <div class="card-rarity">${card.rarity}</div>`;
+      <div class="card-symbol">${card.symbol}</div>`;
     el.addEventListener('click', () => onPick(card));
     wrap.appendChild(el);
   });

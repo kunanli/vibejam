@@ -5,7 +5,7 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.6.0 · 2026-05-22';
+const VERSION = 'v0.7.0 · 2026-05-22';
 
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 
@@ -34,7 +34,7 @@ function enterFloor() {
   R.renderCombo();
   renderSelection();
   R.monsterEnter();
-  R.setNarration(`* ${state.enemy.name} 擋住了去路。`);
+  R.setNarration('');
 }
 
 function newTarget() {
@@ -67,7 +67,7 @@ function renderSelection() {
     baseChips,
     startMult: pattern.mult,
   });
-  R.renderSelection({ sum, patternName: `${pattern.name} ×${pattern.mult}`, dmg: damage });
+  R.renderSelection({ sum, patternName: `×${pattern.mult}`, dmg: damage });
 }
 
 function toggleCard(id) {
@@ -90,10 +90,10 @@ function enemyTurn() {
     A.playHurt();
     R.shake('big');
     R.playerHit();
-    R.setNarration(`* ${e.name} 的攻擊！受到 ${e.attack} 傷害。`);
+    R.setNarration('💥');
     if (state.player.hp <= 0) { R.renderBattle(); gameOver(); return; }
   } else {
-    R.setNarration(`* ${e.name} 正在蓄力…`);
+    R.setNarration('⚡');
   }
   R.renderThreat();
   R.renderBattle();
@@ -137,9 +137,10 @@ function playCards() {
 function applyHit(result, exact, miss) {
   resolving = false;
   if (state.phase !== 'battle') return; // 動畫途中已換場
-  const { damage, heal, crit } = result;
+  const { damage, heal, crit, threatRelief } = result;
 
   state.enemy.hp -= damage;
+  if (threatRelief > 0) state.enemy.threat = Math.max(0, state.enemy.threat - threatRelief);
   A.playHit(state.combo);
   if (exact || crit) A.playCrit();
   if (miss) { A.playWrong(); R.flashMiss(); }
@@ -178,7 +179,7 @@ function winFloor() {
 
 function gameOver() {
   state.phase = 'gameover';
-  R.showOverlay('你倒下了', `抵達第 ${state.floor} 層 · 持有 ${state.deck.length} 張 Joker`, '再爬一次');
+  R.showOverlay('💀', `🗼 ${state.floor}`, '🔄');
 }
 
 // ---- 輸入 ----
@@ -208,11 +209,7 @@ function boot() {
   bindInput();
   R.initBackground();
   document.getElementById('version').textContent = VERSION;
-  R.showOverlay(
-    '數塔 · Number Tower',
-    '選數字牌湊出敵人的「目標數」即攻擊！剛好命中＝暴傷＋連擊，牌型(順子/對子/全偶)給倍率，Joker 滾雪球。出牌後怪物會蓄力，蓄滿就攻擊你——抓準節奏！',
-    '進入塔'
-  );
+  R.showOverlay('數塔', '🃏 ➕ 🟰 🎯 ➡️ 💥', '▶');
 }
 
 boot();

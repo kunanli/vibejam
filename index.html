@@ -21,52 +21,53 @@
         </div>
       </div>
 
-      <!-- 戰鬥畫面（Undertale 半第一人稱） -->
+      <!-- 戰鬥畫面（免識字 · 置中） -->
       <div id="battle" class="battle hidden">
         <div class="topbar">
-          <div class="floor-tag">第 <span id="floor-num">1</span> 層</div>
+          <div class="floor-tag">🗼 <span id="floor-num">1</span></div>
           <div class="jokers" id="jokers"></div>
         </div>
 
-        <!-- 戰鬥區：怪物置中、迷你玩家左下 -->
+        <!-- 戰鬥區：全部置中、由上而下 目標→怪物→狀態→你 -->
         <div class="arena">
           <div id="float-layer" class="float-layer"></div>
 
-          <div class="ut-box enemy-box">
-            <div class="info-name" id="monster-name">史萊姆</div>
-            <div class="info-hp"><div id="enemy-hp-fill" class="info-hp-fill enemy"></div></div>
-            <div class="info-row">
-              <span id="enemy-hp-text">50/50</span>
-              <span class="threat-mini">蓄力 <div class="threat-bar"><div id="threat-fill" class="threat-fill"></div></div></span>
-            </div>
-          </div>
-
-          <div class="ut-box target-box">目標 <span id="target-num">24</span></div>
+          <div class="target-box">🎯 <span id="target-num">24</span></div>
 
           <div id="monster-art" class="sprite monster-sprite">👹</div>
-          <div id="player-art" class="sprite player-mini">🧙</div>
 
-          <div class="combo-banner" id="combo-banner"></div>
-        </div>
-
-        <!-- 旁白 -->
-        <div class="narration" id="narration">* 一隻怪物擋住了去路。</div>
-
-        <!-- Undertale 行動框 -->
-        <div class="ut-actionbox" id="play-bar">
-          <div class="action-top">
-            <div class="player-hp-ut">
-              <span class="hp-label">HP</span>
-              <div class="hp-bar-ut"><div id="player-hp-fill" class="hp-fill-ut"></div></div>
-              <span id="player-hp-text">100/100</span>
+          <div class="enemy-status">
+            <div class="bar-row">
+              <span class="ic">❤️</span>
+              <div class="bar"><div id="enemy-hp-fill" class="bar-fill enemy"></div></div>
+              <span class="bar-num" id="enemy-hp-text">50/50</span>
             </div>
-            <div class="play-readout">
-              <span>總和 <b id="sel-sum">0</b> · <span id="sel-pattern">—</span></span>
-              <span class="readout-dmg">預估 <b id="sel-dmg">0</b></span>
-              <button id="play-btn" class="play-btn">出牌 (Enter)</button>
+            <div class="bar-row">
+              <span class="ic">⚡</span>
+              <div class="bar slim"><div id="threat-fill" class="threat-fill"></div></div>
             </div>
           </div>
+
+          <div id="player-art" class="sprite player-sprite">🧙</div>
+
+          <div class="combo-banner" id="combo-banner"></div>
+          <div class="narration" id="narration"></div>
+        </div>
+
+        <!-- 行動框：大數字牌 + 置中控制列 -->
+        <div class="ut-actionbox" id="play-bar">
           <div class="hand" id="hand"></div>
+          <div class="control-row">
+            <span class="ctl">🟰<b id="sel-sum">0</b></span>
+            <span class="ctl">⭐<b id="sel-pattern">×1</b></span>
+            <span class="ctl dmg">💥<b id="sel-dmg">0</b></span>
+            <button id="play-btn" class="play-btn">⚔️</button>
+          </div>
+          <div class="player-hp-row">
+            <span class="ic">❤️</span>
+            <div class="bar"><div id="player-hp-fill" class="bar-fill player"></div></div>
+            <span class="bar-num" id="player-hp-text">100/100</span>
+          </div>
         </div>
       </div>
 
