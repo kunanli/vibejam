@@ -5,6 +5,8 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
+const VERSION = 'v0.5.0 · 2026-05-22';
+
 let rafId = null;
 let lastTick = 0;
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
@@ -213,6 +215,7 @@ function bindInput() {
 function boot() {
   bindInput();
   R.initBackground();
+  document.getElementById('version').textContent = VERSION;
   R.showOverlay(
     '數塔 · Number Tower',
     '選數字牌湊出敵人的「目標數」即攻擊！剛好命中＝暴傷＋連擊，牌型(順子/對子/全偶)給倍率，Joker 滾雪球。當心威脅條！',

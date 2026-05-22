@@ -46,6 +46,7 @@ html, body {
 .overlay-card { text-align: center; padding: 40px; }
 .overlay-card h1 { font-size: 44px; color: var(--accent); margin: 0 0 12px; text-shadow: 0 0 18px rgba(255,204,68,.5); }
 .overlay-card p { max-width: 460px; line-height: 1.6; opacity: .9; }
+.version { margin-top: 16px; font-size: 12px; opacity: .45; letter-spacing: 1px; }
 button {
   margin-top: 20px; padding: 14px 34px; font-size: 18px; font-weight: bold;
   border: none; border-radius: 999px; background: var(--accent); color: #2a1d00;
