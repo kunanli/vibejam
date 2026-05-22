@@ -66,6 +66,9 @@ function readAloud(text) {
   } catch (e) { /* 不支援就算了 */ }
 }
 
+// 對外朗讀（給獎勵等畫面用）
+export function speak(text) { readAloud(text); }
+
 // 繪本故事頁：插圖 + 文字 + 🔊朗讀 + ▶繼續
 export function showStory(page, onNext) {
   const illus = $('story-illus');
