@@ -269,7 +269,15 @@ export function flashMiss() {
   bar.classList.add('miss');
 }
 
-export function showOverlay(title, sub, btnText) {
+export function showOverlay(title, sub, btnText, cover) {
+  const c = $('cover');
+  if (cover) {
+    c.style.display = '';
+    c.innerHTML = `<img class="cover-img" src="${cover}" alt="" onerror="this.parentNode.style.display='none'">`;
+  } else {
+    c.style.display = 'none';
+    c.innerHTML = '';
+  }
   $('overlay-title').textContent = title;
   $('overlay-sub').textContent = sub;
   $('overlay-btn').textContent = btnText;

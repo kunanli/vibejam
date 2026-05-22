@@ -15,7 +15,7 @@ export function spawnEnemy(floor) {
   const idx = Math.min(floor - 1, TOWER.length - 1);
   const isBoss = idx === TOWER.length - 1; // 第 3 層＝Boss
   const m = TOWER[idx];
-  const hp = Math.round((40 + floor * 35 + floor * floor * 6) * (isBoss ? 1.8 : 1));
+  const hp = Math.round((44 + floor * 40 + floor * floor * 7) * (isBoss ? 1.8 : 1));
   return {
     name: m.name,
     art: m.art,

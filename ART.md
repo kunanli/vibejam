@@ -55,6 +55,14 @@
 
 ---
 
+## 4b. 封面 `assets/ui/`  ⬜ 待生
+開始畫面的封面圖（直式或方形，去背或滿版皆可）。
+| 檔名 | 內容 | Recraft prompt |
+|---|---|---|
+| `cover.webp` | 遊戲封面 | game cover art for a kids math card RPG, a brave little hero in front of a tall magic tower, glowing numbers and cards floating, bright playful storybook style |
+
+---
+
 ## 5. Joker 卡面 `assets/cards/`  ✅ 已完成
 命名規則 `joker-<id>.webp`。下表是各卡目前的效果（卡面會再疊上效果符號）。
 若想重生（特別是 vamp、calm 已換主題），用對應 prompt：

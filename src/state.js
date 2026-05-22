@@ -1,7 +1,7 @@
 // 全域 run 狀態（Balatro 關卡制：限出牌/棄牌次數，無玩家血量）
-export const HAND_SIZE = 7;
-export const PLAYS = 5;     // 每隻怪可出牌次數
-export const DISCARDS = 3;  // 每隻怪可棄牌次數
+export const HAND_SIZE = 5;  // 初始手牌（變少 → 較難湊到目標）
+export const PLAYS = 4;      // 每隻怪可出牌次數（變少 → 較難）
+export const DISCARDS = 3;   // 每隻怪可棄牌次數
 export const MAX_FLOOR = 3; // 一座塔 3 層，打完破關
 
 export const state = {
