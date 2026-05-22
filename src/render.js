@@ -43,6 +43,14 @@ export function renderBattle() {
   }
 }
 
+// 怪物登場動畫：重啟 CSS keyframe
+export function monsterEnter() {
+  const m = $('monster');
+  m.classList.remove('enter');
+  void m.offsetWidth;
+  m.classList.add('enter');
+}
+
 export function renderThreat() {
   const t = state.enemy ? Math.min(1, state.enemy.threat) : 0;
   const fill = $('threat-fill');
@@ -67,13 +75,20 @@ export function renderCombo() {
   }
 }
 
+// 卡面：嘗試載入 Recraft 圖，失敗退回 emoji
+function cardArtHTML(card) {
+  const url = `${import.meta.env.BASE_URL}assets/cards/${card.id}.png`;
+  return `<div class="card-art"><img class="card-img" src="${url}" alt="${card.name}"
+    onerror="this.parentNode.textContent='${card.art}'"></div>`;
+}
+
 export function renderHand() {
   const hand = $('hand');
   hand.innerHTML = '';
   for (const card of state.deck) {
     const el = document.createElement('div');
     el.className = `card rarity-${card.rarity}`;
-    el.innerHTML = `<div class="card-art">${card.art}</div>
+    el.innerHTML = `${cardArtHTML(card)}
       <div class="card-name">${card.name}</div>
       <div class="card-desc">${card.desc}</div>`;
     hand.appendChild(el);
@@ -139,7 +154,7 @@ export function renderRewards(cards, onPick) {
   cards.forEach((card) => {
     const el = document.createElement('div');
     el.className = `card reward-card rarity-${card.rarity}`;
-    el.innerHTML = `<div class="card-art">${card.art}</div>
+    el.innerHTML = `${cardArtHTML(card)}
       <div class="card-name">${card.name}</div>
       <div class="card-desc">${card.desc}</div>
       <div class="card-rarity">${card.rarity}</div>`;

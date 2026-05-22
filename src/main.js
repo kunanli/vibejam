@@ -3,6 +3,7 @@ import { makeProblem } from './math.js';
 import { spawnEnemy, BASE_CHIPS } from './combat.js';
 import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
+import * as A from './audio.js';
 
 let rafId = null;
 let lastTick = 0;
@@ -27,6 +28,7 @@ function enterFloor() {
   R.renderProblem();
   R.renderHand();
   R.renderCombo();
+  R.monsterEnter();
   lastTick = performance.now();
   loop(lastTick);
 }
@@ -50,6 +52,7 @@ function enemyAttack() {
   e.threat = 0;
   state.combo = 0;
   state.player.hp -= e.attack;
+  A.playHurt();
   R.shake('big');
   R.playerHit();
   // 重要：只更新 HP / 威脅 / 連擊，不重繪題目、不碰輸入框 focus 與半打的答案
@@ -71,6 +74,7 @@ function submitAnswer() {
     // 答錯：連擊歸零、無傷害、輕微威脅跳升
     state.combo = 0;
     state.enemy.threat = Math.min(1, state.enemy.threat + 0.12);
+    A.playWrong();
     R.flashWrong();
     R.renderCombo();
     R.renderThreat();
@@ -90,6 +94,8 @@ function submitAnswer() {
 
   state.enemy.hp -= damage;
   state.enemy.threat = Math.max(0, state.enemy.threat - threatRelief);
+  A.playHit(state.combo);
+  if (crit) A.playCrit();
   R.floatDamage(damage, crit);
   R.shake(damage >= 200 ? 'big' : 'normal');
 
@@ -117,8 +123,10 @@ function nextProblem() {
 function winFloor() {
   state.phase = 'reward';
   cancelAnimationFrame(rafId);
+  A.playWin();
   const rewards = rollRewards(3);
   R.renderRewards(rewards, (card) => {
+    A.playClick();
     state.deck.push(card);
     state.floor += 1;
     enterFloor();
@@ -138,6 +146,7 @@ function bindInput() {
     if (ev.key === 'Enter') submitAnswer();
   });
   document.getElementById('overlay-btn').addEventListener('click', () => {
+    A.playClick();
     startRun();
   });
 }
