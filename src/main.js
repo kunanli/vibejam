@@ -5,13 +5,13 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.15.1 · 2026-05-22';
+const VERSION = 'v0.16.0 · 2026-05-22';
 
 // 每打完一層的繪本故事（家長引導讀／語音朗讀）。img 可放 assets/story/pageN.webp，缺圖用 art emoji
 const STORY = {
-  1: { art: '🌱', img: './assets/story/page1.webp', text: '勇者爬上了數塔的第一層，黏呼呼的史萊姆被數字打敗了！再往上爬吧。' },
-  2: { art: '🗝️', img: './assets/story/page2.webp', text: '第二層的哥布林也擋不住勇者的計算，牠丟下鑰匙逃走了。塔頂的守衛正在等著。' },
-  3: { art: '🏆', img: './assets/story/page3.webp', text: '勇者打倒了塔頂的守衛，站上了數塔的最高處！你是最厲害的數字勇者！' },
+  1: { art: '🌱', img: './assets/story/page1.webp', text: '勇者用數字打倒了第一層的守衛！石階通往更高的地方，繼續往上爬吧。' },
+  2: { art: '🗝️', img: './assets/story/page2.webp', text: '第二層的守衛也擋不住勇者的計算，掉下了一把鑰匙。塔頂的大守衛正在等著。' },
+  3: { art: '🏆', img: './assets/story/page3.webp', text: '勇者打倒了塔頂的大守衛，站上了數塔的最高處！你是最厲害的數字勇者！' },
 };
 
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
