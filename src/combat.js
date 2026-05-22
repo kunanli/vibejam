@@ -1,12 +1,13 @@
 // 怪物生成 + 戰鬥數值
 
 // 4 格循環，對應 Recraft 美術；emoji 為圖未載入時的備援
-// img 路徑指向 public/assets/monsters/*.png
+// 用 BASE_URL 組路徑，GitHub Pages 子路徑與 itch 根目錄皆正確
+const B = import.meta.env.BASE_URL;
 const MONSTERS = [
-  { name: '史萊姆', art: '🟢', img: '/assets/monsters/slime.png' },
-  { name: '哥布林', art: '👺', img: '/assets/monsters/goblin.png' },
-  { name: '骷髏兵', art: '💀', img: '/assets/monsters/skeleton.png' },
-  { name: '塔之守衛', art: '🛡️', img: '/assets/monsters/boss-guardian.png' },
+  { name: '史萊姆', art: '🟢', img: `${B}assets/monsters/slime.png` },
+  { name: '哥布林', art: '👺', img: `${B}assets/monsters/goblin.png` },
+  { name: '骷髏兵', art: '💀', img: `${B}assets/monsters/skeleton.png` },
+  { name: '塔之守衛', art: '🛡️', img: `${B}assets/monsters/boss-guardian.png` },
 ];
 
 // 依樓層生成怪物：每 4 層為 Boss（守衛），HP / 威脅速率 / 攻擊隨層膨脹

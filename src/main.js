@@ -145,6 +145,7 @@ function bindInput() {
 // ---- 啟動 ----
 function boot() {
   bindInput();
+  R.initBackground();
   R.showOverlay(
     '數塔 · Number Tower',
     '解數學就是攻擊，連對暴傷，集卡滾雪球。當心怪物的威脅條！',

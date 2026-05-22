@@ -3,6 +3,17 @@ import { state } from './state.js';
 
 const $ = (id) => document.getElementById(id);
 
+// 塔背景：圖層疊在漸層之上，圖檔 404 時自動只剩漸層（優雅退回）
+export function initBackground() {
+  const url = `${import.meta.env.BASE_URL}assets/bg/tower.png`;
+  const grad = 'linear-gradient(180deg, #2a2150, #15112b)';
+  const img = new Image();
+  img.onload = () => {
+    $('battle').querySelector('.stage').style.backgroundImage = `url("${url}"), ${grad}`;
+  };
+  img.src = url; // 失敗則不套用，維持原本漸層
+}
+
 export function showScreen(name) {
   $('battle').classList.toggle('hidden', name !== 'battle');
   $('reward').classList.toggle('hidden', name !== 'reward');

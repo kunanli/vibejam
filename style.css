@@ -75,6 +75,8 @@ button:hover { transform: scale(1.06); }
   position: relative;
   flex: 1;
   background: linear-gradient(180deg, #2a2150, #15112b);
+  background-size: cover;
+  background-position: center;
   border-radius: 16px;
   display: flex;
   align-items: center;
