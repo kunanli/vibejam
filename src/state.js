@@ -2,11 +2,12 @@
 export const HAND_SIZE = 5;  // 初始手牌（變少 → 較難湊到目標）
 export const PLAYS = 4;      // 每隻怪可出牌次數（變少 → 較難）
 export const DISCARDS = 3;   // 每隻怪可棄牌次數
-export const MAX_FLOOR = 3; // 一座塔 3 層，打完破關
+export const MAX_LAYER = 3; // 塔有 3 層；每層數隻雜魚 + 1 Boss
 
 export const state = {
-  phase: 'title', // title | battle | reward | gameover
-  floor: 1,
+  phase: 'title', // title | battle | reward | story | gameover
+  layer: 1,         // 第幾層 (1..MAX_LAYER)
+  battleInLayer: 1, // 該層第幾場 (1起，最後一場為 Boss)
   combo: 0,
   deck: [], // 持有的被動 Joker 卡
   enemy: null, // { name, art, img, hp, maxHp, isBoss }
@@ -21,7 +22,8 @@ export const state = {
 
 export function resetRun() {
   state.phase = 'title';
-  state.floor = 1;
+  state.layer = 1;
+  state.battleInLayer = 1;
   state.combo = 0;
   state.deck = [];
   state.enemy = null;

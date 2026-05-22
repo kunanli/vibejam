@@ -9,22 +9,24 @@ const MONSTERS = [
   { name: '塔之守衛', art: '🛡️', img: './assets/monsters/boss.webp' },
 ];
 
-// 3 層塔：L1 史萊姆、L2 哥布林、L3 守衛(Boss)；HP 隨層膨脹（無攻擊，Balatro 關卡制）
-const TOWER = [MONSTERS[0], MONSTERS[1], MONSTERS[3]];
-export function spawnEnemy(floor) {
-  const idx = Math.min(floor - 1, TOWER.length - 1);
-  const isBoss = idx === TOWER.length - 1; // 第 3 層＝Boss
-  const m = TOWER[idx];
-  const hp = Math.round((44 + floor * 40 + floor * floor * 7) * (isBoss ? 1.8 : 1));
-  return {
-    name: m.name,
-    art: m.art,
-    img: m.img,
-    hp,
-    maxHp: hp,
-    isBoss,
-  };
+// 每層：雜魚(每層不同) → Boss(守衛)。共 MAX_LAYER*(MOBS_PER_LAYER+1) 場
+const MOB_BY_LAYER = [MONSTERS[0], MONSTERS[1], MONSTERS[2]]; // L1史萊姆 L2哥布林 L3骷髏
+const BOSS = MONSTERS[3];
+export const MOBS_PER_LAYER = 1;                 // 每層雜魚數
+export const BATTLES_PER_LAYER = MOBS_PER_LAYER + 1; // 雜魚 + Boss = 2（3 層共 6 隻）
+
+// 全域戰鬥序（1..），決定難度
+export function globalDiff(layer, idx) {
+  return (layer - 1) * BATTLES_PER_LAYER + idx;
 }
 
-// 基礎 chips（含速度加成由外部加）
+// layer:1起；idx:1起（idx>雜魚數即 Boss）
+export function spawnEnemy(layer, idx) {
+  const isBoss = idx > MOBS_PER_LAYER;
+  const m = isBoss ? BOSS : MOB_BY_LAYER[(layer - 1) % MOB_BY_LAYER.length];
+  const g = globalDiff(layer, idx);
+  const hp = Math.round((30 + g * 30 + g * g * 7) * (isBoss ? 1.7 : 1));
+  return { name: m.name, art: m.art, img: m.img, hp, maxHp: hp, isBoss };
+}
+
 export const BASE_CHIPS = 10;

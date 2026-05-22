@@ -1,11 +1,11 @@
-import { state, resetRun, HAND_SIZE, PLAYS, DISCARDS, MAX_FLOOR } from './state.js';
+import { state, resetRun, HAND_SIZE, PLAYS, DISCARDS, MAX_LAYER } from './state.js';
 import { makeTarget, drawCard, evaluatePlay } from './math.js';
-import { spawnEnemy } from './combat.js';
+import { spawnEnemy, globalDiff } from './combat.js';
 import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.14.0 · 2026-05-22';
+const VERSION = 'v0.15.0 · 2026-05-22';
 
 // 每打完一層的繪本故事（家長引導讀／語音朗讀）。img 可放 assets/story/pageN.webp，缺圖用 art emoji
 const STORY = {
@@ -20,15 +20,17 @@ let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 function startRun() {
   resetRun();
   state.deck = [CARD_POOL.find((c) => c.id === 'sharp')]; // 起手 1 張 Joker
-  state.floor = 1;
-  enterFloor();
+  state.layer = 1;
+  state.battleInLayer = 1;
+  enterBattle();
 }
 
-function enterFloor() {
+function enterBattle() {
   state.phase = 'battle';
   resolving = false;
   state.combo = 0;
-  state.enemy = spawnEnemy(state.floor);
+  state.enemy = spawnEnemy(state.layer, state.battleInLayer);
+  state.diff = globalDiff(state.layer, state.battleInLayer);
   state.hand = [];
   state.selected = new Set();
   state.playsLeft = PLAYS;
@@ -36,7 +38,7 @@ function enterFloor() {
   refillHand();
   newTarget();
   R.showScreen('battle');
-  R.setArenaBg(state.floor);
+  R.setArenaBg(state.layer);
   R.renderDecor();
   R.renderBattle();
   R.renderJokers();
@@ -50,14 +52,14 @@ function enterFloor() {
 }
 
 function newTarget() {
-  state.target = makeTarget(state.floor);
+  state.target = makeTarget(state.diff);
   R.renderTarget();
 }
 
 function refillHand() {
   while (state.hand.length < HAND_SIZE) {
     const id = state.nextCardId++;
-    state.hand.push({ id, value: drawCard(state.floor) });
+    state.hand.push({ id, value: drawCard(state.diff) });
     state.justDrawn.add(id); // 給發牌動畫
   }
 }
@@ -145,7 +147,7 @@ function applyHit(result, exact, miss) {
   R.renderBattle();
   R.renderCombo();
 
-  if (state.enemy.hp <= 0) { winFloor(); return; }
+  if (state.enemy.hp <= 0) { winBattle(); return; }
   if (state.playsLeft <= 0) { gameOver(); return; } // 出牌用完仍未打倒
 
   newTarget();
@@ -165,26 +167,40 @@ function discardCards() {
   renderSelection();
 }
 
-function winFloor() {
+function winBattle() {
   A.playWin();
-  R.confettiBurst('mid');
-  const cleared = state.floor;
-  state.phase = 'story';
-  R.showStory(STORY[cleared], () => afterStory(cleared));
+  const boss = state.enemy.isBoss;
+  R.confettiBurst(boss ? 'big' : 'mid');
+  if (boss) {
+    state.phase = 'story';
+    R.showStory(STORY[state.layer], () => rewardThen(advanceLayer)); // Boss → 故事 → 獎勵 → 下一層
+  } else {
+    rewardThen(nextBattle); // 雜魚 → 獎勵 → 下一場
+  }
 }
 
-function afterStory(cleared) {
-  if (cleared >= MAX_FLOOR) { victory(); return; } // 打完第 3 層破關
+function rewardThen(next) {
   state.phase = 'reward';
   const rewards = rollRewards(3);
   R.renderRewards(rewards, (card) => {
     A.playClick();
     state.deck.push(card);
-    state.floor += 1;
-    enterFloor();
+    next();
   });
   R.showScreen('reward');
   R.speak('選一個作為你的獎勵吧');
+}
+
+function nextBattle() {
+  state.battleInLayer += 1;
+  enterBattle();
+}
+
+function advanceLayer() {
+  if (state.layer >= MAX_LAYER) { victory(); return; } // 打完最後一層破關
+  state.layer += 1;
+  state.battleInLayer = 1;
+  enterBattle();
 }
 
 function victory() {
@@ -196,7 +212,7 @@ function victory() {
 
 function gameOver() {
   state.phase = 'gameover';
-  R.showOverlay('💀', `🗼 ${state.floor}/${MAX_FLOOR}`, '🔄');
+  R.showOverlay('💀', `🗼 ${state.layer}/${MAX_LAYER}`, '🔄');
 }
 
 // ---- 輸入 ----

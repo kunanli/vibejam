@@ -1,5 +1,6 @@
 // 純 DOM 更新與特效
-import { state, MAX_FLOOR } from './state.js';
+import { state, MAX_LAYER } from './state.js';
+import { BATTLES_PER_LAYER, MOBS_PER_LAYER } from './combat.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -22,10 +23,17 @@ export function setArenaBg(floor) {
 export function renderProgress() {
   const wrap = $('tower-progress');
   let html = '<span class="tp-ico">🗼</span>';
-  for (let i = 1; i <= MAX_FLOOR; i++) {
-    const cls = i < state.floor ? 'done' : i === state.floor ? 'cur' : 'next';
-    html += `<span class="tp-pip ${cls}">${i}</span>`;
+  for (let L = 1; L <= MAX_LAYER; L++) {
+    const cls = L < state.layer ? 'done' : L === state.layer ? 'cur' : 'next';
+    html += `<span class="tp-pip ${cls}">${L}</span>`;
   }
+  // 本層戰鬥進度：雜魚 ● / Boss 👑
+  html += '<span class="tp-dots">';
+  for (let i = 1; i <= BATTLES_PER_LAYER; i++) {
+    const st = i < state.battleInLayer ? 'd' : i === state.battleInLayer ? 'c' : 'n';
+    html += `<span class="tp-dot ${st}">${i > MOBS_PER_LAYER ? '👑' : '●'}</span>`;
+  }
+  html += '</span>';
   wrap.innerHTML = html;
 }
 
