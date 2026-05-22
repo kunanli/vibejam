@@ -8,7 +8,7 @@
   </head>
   <body>
     <div id="game">
-      <!-- 過場 / 標題 / 結束 共用層 -->
+      <!-- 標題 / 過場 / 結束 -->
       <div id="overlay" class="overlay hidden">
         <div class="overlay-card">
           <h1 id="overlay-title"></h1>
@@ -17,51 +17,56 @@
         </div>
       </div>
 
-      <!-- 戰鬥畫面 -->
+      <!-- 戰鬥畫面（寶可夢視角） -->
       <div id="battle" class="battle hidden">
         <div class="topbar">
           <div class="floor-tag">第 <span id="floor-num">1</span> 層</div>
-          <div class="hp-wrap">
-            <span class="hp-label">HP</span>
-            <div class="hp-bar"><div id="player-hp-fill" class="hp-fill"></div></div>
-            <span id="player-hp-text">100/100</span>
-          </div>
+          <div class="jokers" id="jokers"></div>
         </div>
 
-        <div class="stage">
-          <div id="monster" class="monster">
-            <div id="monster-art" class="monster-art">👹</div>
-            <div class="monster-name" id="monster-name">史萊姆</div>
-            <div class="enemy-hp-bar"><div id="enemy-hp-fill" class="enemy-hp-fill"></div></div>
-            <div class="enemy-hp-text" id="enemy-hp-text">50/50</div>
-            <div class="threat-wrap">
-              <span class="threat-label">威脅</span>
-              <div class="threat-bar"><div id="threat-fill" class="threat-fill"></div></div>
+        <!-- 對戰場：敵人右上、玩家左下 -->
+        <div class="arena">
+          <div id="float-layer" class="float-layer"></div>
+
+          <div class="side enemy-side">
+            <div class="info-box enemy-box">
+              <div class="info-name" id="monster-name">史萊姆</div>
+              <div class="info-hp"><div id="enemy-hp-fill" class="info-hp-fill enemy"></div></div>
+              <div class="info-row">
+                <span id="enemy-hp-text">50/50</span>
+                <span class="threat-mini">威脅 <div class="threat-bar"><div id="threat-fill" class="threat-fill"></div></div></span>
+              </div>
+            </div>
+            <div id="monster-art" class="sprite monster-sprite">👹</div>
+          </div>
+
+          <div class="side player-side">
+            <div id="player-art" class="sprite player-sprite">🧙</div>
+            <div class="info-box player-box">
+              <div class="info-name">你</div>
+              <div class="info-hp"><div id="player-hp-fill" class="info-hp-fill player"></div></div>
+              <div class="info-row"><span id="player-hp-text">100/100</span></div>
             </div>
           </div>
-          <div id="float-layer" class="float-layer"></div>
+
+          <div class="target-banner">目標 <span id="target-num">24</span></div>
+          <div class="combo-banner" id="combo-banner"></div>
         </div>
 
-        <div class="combo-banner" id="combo-banner"></div>
-
-        <div class="problem-area">
-          <div id="problem" class="problem">3 + 4 = ?</div>
-          <input
-            id="answer-input"
-            class="answer-input"
-            type="text"
-            inputmode="numeric"
-            autocomplete="off"
-            placeholder="輸入答案後按 Enter"
-          />
+        <!-- 出牌列：選牌資訊 + 數字手牌 -->
+        <div class="play-bar" id="play-bar">
+          <div class="play-readout">
+            <div class="readout-line">總和 <b id="sel-sum">0</b> · <span id="sel-pattern">—</span></div>
+            <div class="readout-dmg">預估 <b id="sel-dmg">0</b></div>
+            <button id="play-btn" class="play-btn">出牌 (Enter)</button>
+          </div>
+          <div class="hand" id="hand"></div>
         </div>
-
-        <div class="hand" id="hand"></div>
       </div>
 
       <!-- 獎勵三選一 -->
       <div id="reward" class="reward hidden">
-        <h2>戰利品 · 選一張卡牌</h2>
+        <h2>戰利品 · 選一張 Joker</h2>
         <div class="reward-cards" id="reward-cards"></div>
       </div>
     </div>

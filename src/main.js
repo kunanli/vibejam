@@ -1,6 +1,6 @@
-import { state, resetRun } from './state.js';
-import { makeProblem } from './math.js';
-import { spawnEnemy, BASE_CHIPS } from './combat.js';
+import { state, resetRun, HAND_SIZE } from './state.js';
+import { makeTarget, drawCard, evaluatePlay } from './math.js';
+import { spawnEnemy } from './combat.js';
 import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
@@ -11,8 +11,7 @@ let lastTick = 0;
 // ---- 流程 ----
 function startRun() {
   resetRun();
-  // 起手送 1 張基本卡
-  state.deck = [CARD_POOL.find((c) => c.id === 'sharp')];
+  state.deck = [CARD_POOL.find((c) => c.id === 'sharp')]; // 起手 1 張 Joker
   state.floor = 1;
   enterFloor();
 }
@@ -21,28 +20,71 @@ function enterFloor() {
   state.phase = 'battle';
   state.combo = 0;
   state.enemy = spawnEnemy(state.floor);
-  state.problem = makeProblem(state.floor);
+  state.hand = [];
+  state.selected = new Set();
+  refillHand();
+  newTarget();
   R.showScreen('battle');
   R.renderBattle();
   R.renderThreat();
-  R.renderProblem();
-  R.renderHand();
+  R.renderJokers();
+  R.renderHand(toggleCard);
   R.renderCombo();
+  renderSelection();
   R.monsterEnter();
   lastTick = performance.now();
   loop(lastTick);
+}
+
+function newTarget() {
+  state.target = makeTarget(state.floor);
+  R.renderTarget();
+}
+
+function refillHand() {
+  while (state.hand.length < HAND_SIZE) {
+    state.hand.push({ id: state.nextCardId++, value: drawCard(state.floor) });
+  }
+}
+
+// 目前選中的牌值
+function selectedValues() {
+  return state.hand.filter((c) => state.selected.has(c.id)).map((c) => c.value);
+}
+
+// 即時預估（總和 / 牌型 / 傷害）
+function renderSelection() {
+  const vals = selectedValues();
+  if (vals.length === 0) {
+    R.renderSelection({ sum: 0, patternName: '—', dmg: 0 });
+    return;
+  }
+  const { sum, baseChips, pattern } = evaluatePlay(vals, state.target);
+  const { damage } = computeDamage(state.deck, {
+    answer: sum,
+    combo: state.combo,
+    baseChips,
+    startMult: pattern.mult,
+  });
+  R.renderSelection({ sum, patternName: `${pattern.name} ×${pattern.mult}`, dmg: damage });
+}
+
+function toggleCard(id) {
+  if (state.phase !== 'battle') return;
+  if (state.selected.has(id)) state.selected.delete(id);
+  else state.selected.add(id);
+  A.playClick();
+  R.renderHand(toggleCard);
+  renderSelection();
 }
 
 function loop(now) {
   if (state.phase !== 'battle') return;
   const dt = (now - lastTick) / 1000;
   lastTick = now;
-
   const e = state.enemy;
   e.threat += e.threatRate * dt;
-  if (e.threat >= 1) {
-    enemyAttack();
-  }
+  if (e.threat >= 1) enemyAttack();
   R.renderThreat();
   rafId = requestAnimationFrame(loop);
 }
@@ -55,48 +97,37 @@ function enemyAttack() {
   A.playHurt();
   R.shake('big');
   R.playerHit();
-  // 重要：只更新 HP / 威脅 / 連擊，不重繪題目、不碰輸入框 focus 與半打的答案
   R.renderBattle();
   R.renderCombo();
-  if (state.player.hp <= 0) {
-    gameOver();
-  }
+  renderSelection();
+  if (state.player.hp <= 0) gameOver();
 }
 
-function submitAnswer() {
+function playCards() {
   if (state.phase !== 'battle') return;
-  const input = document.getElementById('answer-input');
-  const raw = input.value.trim();
-  if (raw === '') return;
-  const val = Number(raw);
+  const used = state.hand.filter((c) => state.selected.has(c.id));
+  if (used.length === 0) return;
+  const vals = used.map((c) => c.value);
+  const { sum, diff, exact, baseChips, pattern } = evaluatePlay(vals, state.target);
 
-  if (Number.isNaN(val) || val !== state.problem.answer) {
-    // 答錯：連擊歸零、無傷害、輕微威脅跳升
-    state.combo = 0;
-    state.enemy.threat = Math.min(1, state.enemy.threat + 0.12);
-    A.playWrong();
-    R.flashWrong();
-    R.renderCombo();
-    R.renderThreat();
-    nextProblem();
-    return;
-  }
+  // 連擊：剛好命中 +1；差太遠歸零；接近(≤2)維持
+  if (exact) state.combo += 1;
+  else if (diff > 2) state.combo = 0;
 
-  // 答對（MVP 不含速度加成，只靠卡牌加值 × 連擊倍率滾雪球）
-  state.combo += 1;
-  const base = BASE_CHIPS;
-  const { damage, heal, threatRelief, crit } = computeDamage(
-    state.deck,
-    state.problem.answer,
-    state.combo,
-    base
-  );
+  const { damage, heal, threatRelief, crit } = computeDamage(state.deck, {
+    answer: sum,
+    combo: state.combo,
+    baseChips,
+    startMult: pattern.mult,
+  });
 
   state.enemy.hp -= damage;
-  state.enemy.threat = Math.max(0, state.enemy.threat - threatRelief);
+  state.enemy.threat = Math.max(0, state.enemy.threat - (exact ? threatRelief + 0.1 : threatRelief));
+
   A.playHit(state.combo);
-  if (crit) A.playCrit();
-  R.floatDamage(damage, crit);
+  if (exact || crit) A.playCrit();
+  if (diff > 2) { A.playWrong(); R.flashMiss(); }
+  R.floatDamage(damage, exact || crit);
   R.shake(damage >= 200 ? 'big' : 'normal');
 
   if (heal > 0) {
@@ -104,20 +135,19 @@ function submitAnswer() {
     R.floatHeal(heal);
   }
 
+  // 移除用掉的牌、抽補、換目標
+  state.hand = state.hand.filter((c) => !state.selected.has(c.id));
+  state.selected = new Set();
+  refillHand();
+  newTarget();
+
   R.renderBattle();
   R.renderCombo();
   R.renderThreat();
+  R.renderHand(toggleCard);
+  renderSelection();
 
-  if (state.enemy.hp <= 0) {
-    winFloor();
-    return;
-  }
-  nextProblem();
-}
-
-function nextProblem() {
-  state.problem = makeProblem(state.floor);
-  R.renderProblem();
+  if (state.enemy.hp <= 0) winFloor();
 }
 
 function winFloor() {
@@ -137,27 +167,38 @@ function winFloor() {
 function gameOver() {
   state.phase = 'gameover';
   cancelAnimationFrame(rafId);
-  R.showOverlay('你倒下了', `抵達第 ${state.floor} 層 · 持有 ${state.deck.length} 張卡牌`, '再爬一次');
+  R.showOverlay('你倒下了', `抵達第 ${state.floor} 層 · 持有 ${state.deck.length} 張 Joker`, '再爬一次');
 }
 
 // ---- 輸入 ----
 function bindInput() {
-  document.getElementById('answer-input').addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter') submitAnswer();
-  });
+  document.getElementById('play-btn').addEventListener('click', playCards);
   document.getElementById('overlay-btn').addEventListener('click', () => {
     A.playClick();
     startRun();
   });
+  window.addEventListener('keydown', (ev) => {
+    if (state.phase !== 'battle') return;
+    if (ev.key === 'Enter') { playCards(); return; }
+    if (ev.key === 'Backspace') {
+      ev.preventDefault();
+      state.selected = new Set();
+      R.renderHand(toggleCard);
+      renderSelection();
+      return;
+    }
+    // 數字鍵 1–7 切換對應手牌
+    const n = parseInt(ev.key, 10);
+    if (n >= 1 && n <= state.hand.length) toggleCard(state.hand[n - 1].id);
+  });
 }
 
-// ---- 啟動 ----
 function boot() {
   bindInput();
   R.initBackground();
   R.showOverlay(
     '數塔 · Number Tower',
-    '解數學就是攻擊，連對暴傷，集卡滾雪球。當心怪物的威脅條！',
+    '選數字牌湊出敵人的「目標數」即攻擊！剛好命中＝暴傷＋連擊，牌型(順子/對子/全偶)給倍率，Joker 滾雪球。當心威脅條！',
     '進入塔'
   );
 }

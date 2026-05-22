@@ -1,54 +1,59 @@
-// 依樓層產生算術題
+// v2 玩法核心：發數字牌、湊目標數、牌型判定
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// 產生一道題：難度隨樓層提升（數字變大、加入乘法、後期多步驟）
-export function makeProblem(floor) {
-  const tier = Math.min(floor, 12);
-  // 漸進解鎖：L1–L2 只有 ＋ −，L3 起解鎖 ×（除法不做）
-  const ops = ['+', '-'];
-  if (tier >= 3) { ops.push('×'); ops.push('×'); }
-
-  const op = ops[randInt(0, ops.length - 1)];
-  let a, b, answer, text;
-
-  if (op === '×') {
-    const cap = 4 + tier * 2; // 乘法因數隨樓層變大
-    a = randInt(2, cap);
-    b = randInt(2, cap);
-    answer = a * b;
-    text = `${a} × ${b} = ?`;
-  } else if (op === '+') {
-    const cap = 10 + tier * 12;
-    a = randInt(2, cap);
-    b = randInt(2, cap);
-    answer = a + b;
-    text = `${a} + ${b} = ?`;
-  } else {
-    const cap = 10 + tier * 12;
-    a = randInt(cap, cap * 2);
-    b = randInt(2, cap);
-    answer = a - b;
-    text = `${a} − ${b} = ?`;
-  }
-
-  // 後期偶爾出三項式
-  if (tier >= 5 && Math.random() < 0.35) {
-    const c = randInt(2, 9);
-    answer = answer + c;
-    text = text.replace(' = ?', ` + ${c} = ?`);
-  }
-
-  return { text, answer, bornAt: performance.now() };
+// 牌值上限隨樓層提升
+function cardMax(floor) {
+  return Math.min(20, 9 + Math.floor((floor - 1) / 2));
 }
 
-// 速度加成（nice-to-have，MVP 不啟用，留待平衡微調期）
-export function speedBonus(problem) {
-  const elapsed = (performance.now() - problem.bornAt) / 1000;
-  if (elapsed <= 1.5) return 15;
-  if (elapsed <= 3) return 10;
-  if (elapsed <= 5) return 5;
-  return 0;
+// 抽一張數字牌（無限牌池）
+export function drawCard(floor) {
+  return randInt(1, cardMax(floor));
+}
+
+// 本手目標數：隨樓層變大，落在「數張手牌可湊到」的範圍
+export function makeTarget(floor) {
+  const base = 12 + floor * 4;
+  return randInt(base, base + 10 + floor * 2);
+}
+
+// 牌型偵測：取最佳單一牌型（values 為選中的牌值陣列）
+export function detectPattern(values) {
+  const n = values.length;
+  if (n === 0) return { name: '—', mult: 1 };
+
+  const counts = {};
+  for (const v of values) counts[v] = (counts[v] || 0) + 1;
+  const maxSame = Math.max(...Object.values(counts));
+
+  // 順子：相異值排序後連續
+  const uniq = [...new Set(values)].sort((a, b) => a - b);
+  let runLen = 1, bestRun = 1;
+  for (let i = 1; i < uniq.length; i++) {
+    if (uniq[i] === uniq[i - 1] + 1) { runLen++; bestRun = Math.max(bestRun, runLen); }
+    else runLen = 1;
+  }
+
+  const allEven = n >= 3 && values.every((v) => v % 2 === 0);
+  const allOdd = n >= 3 && values.every((v) => v % 2 === 1);
+
+  if (maxSame >= 3) return { name: '三條', mult: 4 };
+  if (bestRun >= 3) return { name: '順子', mult: 3 };
+  if (allEven) return { name: '全偶', mult: 2.5 };
+  if (allOdd) return { name: '全奇', mult: 2.5 };
+  if (maxSame >= 2) return { name: '對子', mult: 2 };
+  return { name: '單張', mult: 1 };
+}
+
+// 結算一手：接近度→baseChips，牌型→mult
+export function evaluatePlay(values, target) {
+  const sum = values.reduce((s, v) => s + v, 0);
+  const diff = Math.abs(sum - target);
+  const exact = diff === 0;
+  const baseChips = exact ? 60 : Math.max(5, 40 - diff * 8);
+  const pattern = detectPattern(values);
+  return { sum, diff, exact, baseChips, pattern };
 }

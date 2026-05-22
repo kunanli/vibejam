@@ -89,11 +89,11 @@ export function comboMult(combo) {
   return 1 + combo * 0.25;
 }
 
-// 結算傷害：套用所有持有卡牌
-export function computeDamage(deck, answer, combo, baseChips) {
+// 結算傷害：套用所有持有 Joker；startMult 來自牌型倍率
+export function computeDamage(deck, { answer, combo, baseChips, startMult = 1 }) {
   const ctx = {
     chips: baseChips,
-    mult: comboMult(combo),
+    mult: comboMult(combo) * startMult,
     answer,
     combo,
     heal: 0,
