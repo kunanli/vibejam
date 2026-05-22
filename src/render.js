@@ -365,14 +365,18 @@ export function flashMiss() {
 
 export function showOverlay(title, sub, btnText, cover) {
   const c = $('cover');
+  const h1 = $('overlay-title');
   if (cover) {
     c.style.display = '';
-    c.innerHTML = `<img class="cover-img" src="${cover}" alt="" onerror="this.parentNode.style.display='none'">`;
+    c.innerHTML = `<img class="cover-img" src="${cover}" alt="" onerror="this.parentNode.classList.add('noimg')">`
+      + `<div class="cover-title">${title}</div>`;
+    h1.style.display = 'none';
   } else {
     c.style.display = 'none';
     c.innerHTML = '';
+    h1.style.display = '';
+    h1.textContent = title;
   }
-  $('overlay-title').textContent = title;
   $('overlay-sub').textContent = sub;
   $('overlay-btn').textContent = btnText;
   showScreen('overlay');

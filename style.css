@@ -41,8 +41,16 @@ html, body {
   background: #000; z-index: 50;
 }
 .overlay-card { text-align: center; padding: 40px; display: flex; flex-direction: column; align-items: center; }
-.cover { width: min(60vw, 460px); height: clamp(200px, 42vh, 460px); margin-bottom: 8px; }
+.cover { position: relative; width: min(82vw, 760px); height: clamp(300px, 60vh, 620px); margin-bottom: 4px; }
 .cover-img { width: 100%; height: 100%; object-fit: contain; }
+.cover.noimg .cover-img { display: none; }
+/* 標題壓在封面圖上 */
+.cover-title {
+  position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%);
+  font-size: clamp(48px, 9vh, 92px); font-weight: 900; color: var(--accent); white-space: nowrap;
+  text-shadow: 0 3px 0 #000, 0 0 22px rgba(0,0,0,.9), 0 0 14px rgba(255,207,58,.6);
+  letter-spacing: 4px;
+}
 .overlay-card h1 { font-size: 60px; color: var(--accent); margin: 0 0 14px; letter-spacing: 2px; text-shadow: 0 0 18px rgba(255,207,58,.5); }
 .overlay-card p { max-width: 520px; line-height: 1.4; font-size: 40px; opacity: .95; }
 button {

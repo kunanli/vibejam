@@ -5,7 +5,7 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.16.0 · 2026-05-22';
+const VERSION = 'v0.16.1 · 2026-05-22';
 
 // 每打完一層的繪本故事（家長引導讀／語音朗讀）。img 可放 assets/story/pageN.webp，缺圖用 art emoji
 const STORY = {
@@ -244,7 +244,7 @@ function bindInput() {
 function boot() {
   bindInput();
   document.getElementById('version').textContent = VERSION;
-  R.showOverlay('數塔 🗼', '🗼 ▮▮▮  ·  🃏 ➕ 🟰 🎯 ➡️ 💥', '▶', './assets/ui/cover.webp');
+  R.showOverlay('數塔', '🃏 ➡️ 🎯 ➡️ 💥', '▶', './assets/ui/cover.webp');
 }
 
 boot();
