@@ -18,7 +18,13 @@ export function renderBattle() {
   $('player-hp-text').textContent = `${Math.max(0, Math.round(player.hp))}/${player.maxHp}`;
 
   if (enemy) {
-    $('monster-art').textContent = enemy.art;
+    const slot = $('monster-art');
+    if (enemy.img) {
+      // 嘗試載入 Recraft 圖；載入失敗（檔案還沒放）自動退回 emoji
+      slot.innerHTML = `<img class="monster-img" src="${enemy.img}" alt="${enemy.name}" onerror="this.parentNode.textContent='${enemy.art}'">`;
+    } else {
+      slot.textContent = enemy.art;
+    }
     $('monster-name').textContent = enemy.name;
     const ehp = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
     $('enemy-hp-fill').style.width = ehp + '%';

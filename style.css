@@ -84,6 +84,7 @@ button:hover { transform: scale(1.06); }
 }
 .monster { text-align: center; }
 .monster-art { font-size: 110px; line-height: 1; filter: drop-shadow(0 8px 20px rgba(0,0,0,.6)); animation: bob 2.4s ease-in-out infinite; }
+.monster-img { width: 200px; height: 200px; object-fit: contain; display: block; }
 @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 .monster-name { font-size: 20px; font-weight: bold; margin-top: 6px; }
 .enemy-hp-bar { width: 220px; height: 14px; margin: 8px auto 2px; background: #3a2030; border-radius: 7px; overflow: hidden; }
