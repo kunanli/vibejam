@@ -9,15 +9,15 @@ const MONSTERS = [
   { name: '塔之守衛', art: '🛡️', img: './assets/monsters/boss.png' },
 ];
 
-// 依樓層生成怪物：每 4 層為 Boss（守衛），HP 隨層膨脹（無攻擊，Balatro 關卡制）
+// 3 層塔：L1 史萊姆、L2 哥布林、L3 守衛(Boss)；HP 隨層膨脹（無攻擊，Balatro 關卡制）
+const TOWER = [MONSTERS[0], MONSTERS[1], MONSTERS[3]];
 export function spawnEnemy(floor) {
-  const idx = (floor - 1) % MONSTERS.length;
-  const isBoss = idx === MONSTERS.length - 1; // 第 4 格＝Boss
-  const cycle = Math.floor((floor - 1) / MONSTERS.length);
-  const m = MONSTERS[idx];
+  const idx = Math.min(floor - 1, TOWER.length - 1);
+  const isBoss = idx === TOWER.length - 1; // 第 3 層＝Boss
+  const m = TOWER[idx];
   const hp = Math.round((40 + floor * 35 + floor * floor * 6) * (isBoss ? 1.8 : 1));
   return {
-    name: cycle > 0 && isBoss ? `${m.name} +${cycle}` : m.name,
+    name: m.name,
     art: m.art,
     img: m.img,
     hp,

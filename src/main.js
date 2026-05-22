@@ -1,11 +1,11 @@
-import { state, resetRun, HAND_SIZE, PLAYS, DISCARDS } from './state.js';
+import { state, resetRun, HAND_SIZE, PLAYS, DISCARDS, MAX_FLOOR } from './state.js';
 import { makeTarget, drawCard, evaluatePlay } from './math.js';
 import { spawnEnemy } from './combat.js';
 import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.9.0 · 2026-05-22';
+const VERSION = 'v0.10.0 · 2026-05-22';
 
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 
@@ -150,8 +150,9 @@ function discardCards() {
 }
 
 function winFloor() {
-  state.phase = 'reward';
   A.playWin();
+  if (state.floor >= MAX_FLOOR) { victory(); return; } // 打完第 3 層破關
+  state.phase = 'reward';
   const rewards = rollRewards(3);
   R.renderRewards(rewards, (card) => {
     A.playClick();
@@ -162,9 +163,14 @@ function winFloor() {
   R.showScreen('reward');
 }
 
+function victory() {
+  state.phase = 'gameover';
+  R.showOverlay('🏆', '🗼✨', '🔄');
+}
+
 function gameOver() {
   state.phase = 'gameover';
-  R.showOverlay('💀', `🗼 ${state.floor}`, '🔄');
+  R.showOverlay('💀', `🗼 ${state.floor}/${MAX_FLOOR}`, '🔄');
 }
 
 // ---- 輸入 ----
@@ -197,7 +203,7 @@ function boot() {
   bindInput();
   R.initBackground();
   document.getElementById('version').textContent = VERSION;
-  R.showOverlay('數塔', '🃏 ➕ 🟰 🎯 ➡️ 💥', '▶');
+  R.showOverlay('數塔 🗼', '🗼 ▮▮▮  ·  🃏 ➕ 🟰 🎯 ➡️ 💥', '▶');
 }
 
 boot();

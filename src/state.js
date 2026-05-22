@@ -2,6 +2,7 @@
 export const HAND_SIZE = 7;
 export const PLAYS = 5;     // 每隻怪可出牌次數
 export const DISCARDS = 3;  // 每隻怪可棄牌次數
+export const MAX_FLOOR = 3; // 一座塔 3 層，打完破關
 
 export const state = {
   phase: 'title', // title | battle | reward | gameover

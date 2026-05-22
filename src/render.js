@@ -1,5 +1,5 @@
 // 純 DOM 更新與特效
-import { state } from './state.js';
+import { state, MAX_FLOOR } from './state.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -30,7 +30,7 @@ function spriteHTML(slot, img, art, cls) {
 
 export function renderBattle() {
   const { enemy, floor } = state;
-  $('floor-num').textContent = floor;
+  $('floor-num').textContent = `${floor}/${MAX_FLOOR}`;
   if (enemy) {
     spriteHTML($('monster-art'), enemy.img, enemy.art, 'sprite-img');
     $('enemy-remain').textContent = Math.max(0, Math.round(enemy.hp)); // 還需傷害
