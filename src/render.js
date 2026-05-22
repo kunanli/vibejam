@@ -123,8 +123,8 @@ export function floatDamage(amount, crit) {
   else if (amount >= 200) el.classList.add('big');
   if (crit) el.classList.add('crit');
   el.textContent = (crit ? '暴擊 ' : '') + amount;
-  el.style.left = 62 + Math.random() * 12 + '%';
-  el.style.top = 12 + Math.random() * 8 + '%';
+  el.style.left = 58 + Math.random() * 14 + '%';
+  el.style.top = 28 + Math.random() * 10 + '%';
   layer.appendChild(el);
   setTimeout(() => el.remove(), 1100);
 }
@@ -153,6 +153,44 @@ export function playerHit() {
   battle.classList.remove('hurt');
   void battle.offsetWidth;
   battle.classList.add('hurt');
+}
+
+// 出牌飛向敵人：選中的數字牌從手牌位置飛到怪物 sprite 中心，結束呼叫 onArrive
+export function flyCardsToEnemy(cardEls, onArrive) {
+  const DUR = 340;
+  const target = $('monster-art').getBoundingClientRect();
+  const tx = target.left + target.width / 2;
+  const ty = target.top + target.height / 2;
+
+  let layer = $('fly-layer');
+  if (!layer) {
+    layer = document.createElement('div');
+    layer.id = 'fly-layer';
+    document.body.appendChild(layer);
+  }
+
+  if (!cardEls.length) { setTimeout(onArrive, 0); return; }
+
+  cardEls.forEach((el, i) => {
+    const r = el.getBoundingClientRect();
+    const fly = document.createElement('div');
+    fly.className = 'fly-card';
+    fly.textContent = el.querySelector('.numcard-val')?.textContent ?? '';
+    fly.style.left = r.left + 'px';
+    fly.style.top = r.top + 'px';
+    fly.style.width = r.width + 'px';
+    fly.style.height = r.height + 'px';
+    layer.appendChild(fly);
+    const dx = tx - (r.left + r.width / 2);
+    const dy = ty - (r.top + r.height / 2);
+    const rot = (i - cardEls.length / 2) * 14;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      fly.style.transform = `translate(${dx}px, ${dy}px) scale(.35) rotate(${rot}deg)`;
+      fly.style.opacity = '0.15';
+    }));
+    setTimeout(() => fly.remove(), DUR + 80);
+  });
+  setTimeout(onArrive, DUR);
 }
 
 // 差太遠：出牌列閃一下提示

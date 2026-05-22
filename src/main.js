@@ -7,6 +7,7 @@ import * as A from './audio.js';
 
 let rafId = null;
 let lastTick = 0;
+let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 
 // ---- 流程 ----
 function startRun() {
@@ -18,6 +19,7 @@ function startRun() {
 
 function enterFloor() {
   state.phase = 'battle';
+  resolving = false;
   state.combo = 0;
   state.enemy = spawnEnemy(state.floor);
   state.hand = [];
@@ -104,7 +106,7 @@ function enemyAttack() {
 }
 
 function playCards() {
-  if (state.phase !== 'battle') return;
+  if (state.phase !== 'battle' || resolving) return;
   const used = state.hand.filter((c) => state.selected.has(c.id));
   if (used.length === 0) return;
   const vals = used.map((c) => c.value);
@@ -114,19 +116,40 @@ function playCards() {
   if (exact) state.combo += 1;
   else if (diff > 2) state.combo = 0;
 
-  const { damage, heal, threatRelief, crit } = computeDamage(state.deck, {
+  const result = computeDamage(state.deck, {
     answer: sum,
     combo: state.combo,
     baseChips,
     startMult: pattern.mult,
   });
+  const miss = diff > 2;
+
+  // 抓選中牌的 DOM（飛行用），趁重繪前
+  const cardEls = [...document.querySelectorAll('#hand .numcard.selected')];
+
+  resolving = true;
+  // 用掉的牌離手、補牌、重繪（牌飛出時手牌即更新）
+  state.hand = state.hand.filter((c) => !state.selected.has(c.id));
+  state.selected = new Set();
+  refillHand();
+  R.renderHand(toggleCard);
+  renderSelection();
+
+  // 飛到敵人才結算傷害
+  R.flyCardsToEnemy(cardEls, () => applyHit(result, exact, miss));
+}
+
+function applyHit(result, exact, miss) {
+  resolving = false;
+  if (state.phase !== 'battle') return; // 動畫途中已死亡/換場
+  const { damage, heal, threatRelief, crit } = result;
 
   state.enemy.hp -= damage;
   state.enemy.threat = Math.max(0, state.enemy.threat - (exact ? threatRelief + 0.1 : threatRelief));
 
   A.playHit(state.combo);
   if (exact || crit) A.playCrit();
-  if (diff > 2) { A.playWrong(); R.flashMiss(); }
+  if (miss) { A.playWrong(); R.flashMiss(); }
   R.floatDamage(damage, exact || crit);
   R.shake(damage >= 200 ? 'big' : 'normal');
 
@@ -135,16 +158,10 @@ function playCards() {
     R.floatHeal(heal);
   }
 
-  // 移除用掉的牌、抽補、換目標
-  state.hand = state.hand.filter((c) => !state.selected.has(c.id));
-  state.selected = new Set();
-  refillHand();
   newTarget();
-
   R.renderBattle();
   R.renderCombo();
   R.renderThreat();
-  R.renderHand(toggleCard);
   renderSelection();
 
   if (state.enemy.hp <= 0) winFloor();
