@@ -69,7 +69,7 @@ export function renderCombo() {
 
 // 上方常駐 Joker 列（被動卡）
 function jokerArtHTML(card) {
-  const url = `./assets/cards/${card.id}.png`;
+  const url = `./assets/cards/joker-${card.id}.png`;
   return `<span class="joker-art"><img class="joker-img" src="${url}" alt="${card.name}"
     onerror="this.parentNode.textContent='${card.art}'"></span>`;
 }
@@ -216,7 +216,7 @@ export function renderRewards(cards, onPick) {
   const wrap = $('reward-cards');
   wrap.innerHTML = '';
   cards.forEach((card) => {
-    const url = `./assets/cards/${card.id}.png`;
+    const url = `./assets/cards/joker-${card.id}.png`;
     const el = document.createElement('div');
     el.className = `card reward-card rarity-${card.rarity}`;
     el.title = `${card.name}：${card.desc}`;

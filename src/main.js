@@ -5,7 +5,7 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.10.0 · 2026-05-22';
+const VERSION = 'v0.10.1 · 2026-05-22';
 
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 
