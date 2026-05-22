@@ -5,7 +5,14 @@ import { computeDamage, rollRewards, CARD_POOL } from './cards.js';
 import * as R from './render.js';
 import * as A from './audio.js';
 
-const VERSION = 'v0.10.1 · 2026-05-22';
+const VERSION = 'v0.11.0 · 2026-05-22';
+
+// 每打完一層的繪本故事（家長引導讀／語音朗讀）。img 可放 assets/story/pageN.webp，缺圖用 art emoji
+const STORY = {
+  1: { art: '🌱', img: './assets/story/page1.webp', text: '勇者爬上了數塔的第一層，黏呼呼的史萊姆被數字打敗了！再往上爬吧。' },
+  2: { art: '🗝️', img: './assets/story/page2.webp', text: '第二層的哥布林也擋不住勇者的計算，牠丟下鑰匙逃走了。塔頂的守衛正在等著。' },
+  3: { art: '🏆', img: './assets/story/page3.webp', text: '勇者打倒了塔頂的守衛，站上了數塔的最高處！你是最厲害的數字勇者！' },
+};
 
 let resolving = false; // 出牌飛行動畫進行中，忽略重複出牌
 
@@ -151,7 +158,13 @@ function discardCards() {
 
 function winFloor() {
   A.playWin();
-  if (state.floor >= MAX_FLOOR) { victory(); return; } // 打完第 3 層破關
+  const cleared = state.floor;
+  state.phase = 'story';
+  R.showStory(STORY[cleared], () => afterStory(cleared));
+}
+
+function afterStory(cleared) {
+  if (cleared >= MAX_FLOOR) { victory(); return; } // 打完第 3 層破關
   state.phase = 'reward';
   const rewards = rollRewards(3);
   R.renderRewards(rewards, (card) => {

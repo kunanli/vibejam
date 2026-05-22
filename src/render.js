@@ -18,6 +18,35 @@ export function showScreen(name) {
   $('battle').classList.toggle('hidden', name !== 'battle');
   $('reward').classList.toggle('hidden', name !== 'reward');
   $('overlay').classList.toggle('hidden', name !== 'overlay');
+  $('story').classList.toggle('hidden', name !== 'story');
+}
+
+// 語音朗讀（中文），失敗就靜默
+function readAloud(text) {
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-TW';
+    u.rate = 0.9;
+    synth.speak(u);
+  } catch (e) { /* 不支援就算了 */ }
+}
+
+// 繪本故事頁：插圖 + 文字 + 🔊朗讀 + ▶繼續
+export function showStory(page, onNext) {
+  const illus = $('story-illus');
+  if (page.img) {
+    illus.innerHTML = `<img class="story-img" src="${page.img}" alt="" onerror="this.parentNode.textContent='${page.art}'">`;
+  } else {
+    illus.textContent = page.art;
+  }
+  $('story-text').textContent = page.text;
+  $('story-read').onclick = () => readAloud(page.text);
+  $('story-next').onclick = () => { try { window.speechSynthesis.cancel(); } catch (e) {} onNext(); };
+  showScreen('story');
+  readAloud(page.text); // 進場自動讀一次
 }
 
 function spriteHTML(slot, img, art, cls) {
@@ -69,7 +98,7 @@ export function renderCombo() {
 
 // 上方常駐 Joker 列（被動卡）
 function jokerArtHTML(card) {
-  const url = `./assets/cards/joker-${card.id}.png`;
+  const url = `./assets/cards/joker-${card.id}.webp`;
   return `<span class="joker-art"><img class="joker-img" src="${url}" alt="${card.name}"
     onerror="this.parentNode.textContent='${card.art}'"></span>`;
 }
@@ -216,7 +245,7 @@ export function renderRewards(cards, onPick) {
   const wrap = $('reward-cards');
   wrap.innerHTML = '';
   cards.forEach((card) => {
-    const url = `./assets/cards/joker-${card.id}.png`;
+    const url = `./assets/cards/joker-${card.id}.webp`;
     const el = document.createElement('div');
     el.className = `card reward-card rarity-${card.rarity}`;
     el.title = `${card.name}：${card.desc}`;
